@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-display { font-family: 'Fraunces', serif; }
+.font-mono-num { font-family: 'JetBrains Mono', monospace; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
