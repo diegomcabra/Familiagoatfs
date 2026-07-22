@@ -46,6 +46,7 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
     productos: "M20 7l-8-4-8 4v10l8 4 8-4V7zM4 7l8 4 8-4M12 11v10",
     recetas: "M4 3h16v18l-8-4-8 4V3z M8 8h8M8 12h5",
     ventas: "M3 3v18h18M7 15l4-4 3 3 5-6",
+    pedidos: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12l2 2 4-4",
     pvp: "M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6",
     plus: "M12 5v14M5 12h14",
     trash: "M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14",
@@ -90,6 +91,7 @@ export default function GoatApp() {
   const [productos, setProductos] = useState(PRODUCTOS_INICIALES);
   const [recetas, setRecetas] = useState(RECETAS_INICIALES);
   const [ventas, setVentas] = useState([]);
+  const [pedidos, setPedidos] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [saveState, setSaveState] = useState("idle"); // idle | saving | saved
   const [syncStatus, setSyncStatus] = useState(supabaseConfigured ? "checking" : "local"); // checking | synced | error | local
@@ -109,9 +111,10 @@ export default function GoatApp() {
             if (d.productos) setProductos(d.productos);
             if (d.recetas) setRecetas(d.recetas);
             if (d.ventas) setVentas(d.ventas);
+            if (d.pedidos) setPedidos(d.pedidos);
           } else {
             // primera vez: no existe la fila todavía, la creamos con los datos iniciales
-            const { error: upsertError } = await supabase.from("app_data").upsert({ id: ROW_ID, data: { insumos, productos, recetas, ventas } });
+            const { error: upsertError } = await supabase.from("app_data").upsert({ id: ROW_ID, data: { insumos, productos, recetas, ventas, pedidos } });
             if (upsertError) throw upsertError;
           }
           setSyncStatus("synced");
@@ -127,6 +130,7 @@ export default function GoatApp() {
               if (d.productos) setProductos(d.productos);
               if (d.recetas) setRecetas(d.recetas);
               if (d.ventas) setVentas(d.ventas);
+              if (d.pedidos) setPedidos(d.pedidos);
             }
           } catch (e2) {}
         }
@@ -139,6 +143,7 @@ export default function GoatApp() {
             if (d.productos) setProductos(d.productos);
             if (d.recetas) setRecetas(d.recetas);
             if (d.ventas) setVentas(d.ventas);
+            if (d.pedidos) setPedidos(d.pedidos);
           }
         } catch (e) {}
       }
@@ -160,6 +165,7 @@ export default function GoatApp() {
         if (d.productos) setProductos(d.productos);
         if (d.recetas) setRecetas(d.recetas);
         if (d.ventas) setVentas(d.ventas);
+        if (d.pedidos) setPedidos(d.pedidos);
       })
       .subscribe((status) => {
         // "CHANNEL_ERROR" o "TIMED_OUT" indican que Realtime no está habilitado o hay un problema de conexión
@@ -176,7 +182,7 @@ export default function GoatApp() {
     if (!loaded) return;
     setSaveState("saving");
     const t = setTimeout(async () => {
-      const payload = { insumos, productos, recetas, ventas };
+      const payload = { insumos, productos, recetas, ventas, pedidos };
       if (supabaseConfigured) {
         try {
           lastLocalWrite.current = Date.now();
@@ -201,7 +207,7 @@ export default function GoatApp() {
       }
     }, 500);
     return () => clearTimeout(t);
-  }, [insumos, productos, recetas, ventas, loaded]);
+  }, [insumos, productos, recetas, ventas, pedidos, loaded]);
 
   const insumoMap = useMemo(() => Object.fromEntries(insumos.map((i) => [i.id, i])), [insumos]);
   const productoMap = useMemo(() => Object.fromEntries(productos.map((p) => [p.id, p])), [productos]);
@@ -226,6 +232,7 @@ export default function GoatApp() {
     { id: "insumos", label: "Insumos", icon: "insumos" },
     { id: "productos", label: "Productos", icon: "productos" },
     { id: "recetas", label: "Recetas", icon: "recetas" },
+    { id: "pedidos", label: "Pedidos", icon: "pedidos" },
     { id: "ventas", label: "Ventas", icon: "ventas" },
     { id: "pvp", label: "Calculadora PVP", icon: "pvp" },
   ];
@@ -304,6 +311,8 @@ export default function GoatApp() {
               totalVentasIngresos={totalVentasIngresos}
               totalVentasGanancia={totalVentasGanancia}
               ventas={ventas}
+              pedidos={pedidos}
+              setTab={setTab}
             />
           )}
           {tab === "insumos" && <Insumos insumos={insumos} setInsumos={setInsumos} />}
@@ -313,18 +322,20 @@ export default function GoatApp() {
           {tab === "recetas" && (
             <Recetas productos={productos} insumos={insumos} recetas={recetas} setRecetas={setRecetas} costoProducto={costoProducto} />
           )}
-          {tab === "ventas" && (
-            <Ventas
+          {tab === "pedidos" && (
+            <Pedidos
               productos={productos}
               setProductos={setProductos}
               insumos={insumos}
               setInsumos={setInsumos}
               recetas={recetas}
-              ventas={ventas}
+              pedidos={pedidos}
+              setPedidos={setPedidos}
               setVentas={setVentas}
               costoProducto={costoProducto}
             />
           )}
+          {tab === "ventas" && <Ventas ventas={ventas} />}
           {tab === "pvp" && <CalculadoraPVP productos={productos} recetas={recetas} costoProducto={costoProducto} />}
         </main>
       </div>
@@ -344,7 +355,9 @@ function KpiCard({ label, value, sub, accent = "amber" }) {
   );
 }
 
-function Dashboard({ insumos, productos, recetas, costoProducto, insumosBajoStock, productosBajoStock, valorInventarioInsumos, valorInventarioProductos, totalVentasIngresos, totalVentasGanancia, ventas }) {
+function Dashboard({ insumos, productos, recetas, costoProducto, insumosBajoStock, productosBajoStock, valorInventarioInsumos, valorInventarioProductos, totalVentasIngresos, totalVentasGanancia, ventas, pedidos, setTab }) {
+  const pendientes = pedidos.filter((p) => p.estado === "Pendiente");
+
   const exportarTodo = () => {
     exportarExcel("goat-datos-completos", {
       Insumos: insumos.map((i) => ({
@@ -379,6 +392,15 @@ function Dashboard({ insumos, productos, recetas, costoProducto, insumosBajoStoc
           "Subtotal costo": Number(((ins?.costo || 0) * r.cantidad).toFixed(2)),
         };
       }),
+      Pedidos: pedidos.map((p) => ({
+        Fecha: p.fecha,
+        Producto: p.nombreProducto,
+        Cliente: p.cliente,
+        "Medio de pago": p.medioPago,
+        Cantidad: p.cantidad,
+        Estado: p.estado,
+        "Fecha entrega": p.fechaEntrega || "",
+      })),
       Ventas: ventas.map((v) => ({
         Fecha: v.fecha,
         Producto: v.nombreProducto,
@@ -401,9 +423,12 @@ function Dashboard({ insumos, productos, recetas, costoProducto, insumosBajoStoc
         <BotonExportar label="Exportar todo" onClick={exportarTodo} />
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <KpiCard label="Valor insumos en stock" value={fmt(valorInventarioInsumos)} sub={`${insumos.length} insumos cargados`} />
         <KpiCard label="Valor productos en stock" value={fmt(valorInventarioProductos)} sub={`${productos.length} productos cargados`} />
+        <button onClick={() => setTab && setTab("pedidos")} className="text-left">
+          <KpiCard label="Pedidos pendientes" value={pendientes.length} sub="Esperando confirmación de entrega" accent={pendientes.length > 0 ? "orange" : "stone"} />
+        </button>
         <KpiCard label="Ingresos por ventas" value={fmt(totalVentasIngresos)} sub={`${ventas.length} ventas registradas`} accent="emerald" />
         <KpiCard label="Ganancia acumulada" value={fmt(totalVentasGanancia)} sub="Ingresos − costo de insumos" accent="emerald" />
       </div>
@@ -819,58 +844,91 @@ function Recetas({ productos, insumos, recetas, setRecetas, costoProducto }) {
 }
 
 /* ============ COMPONENTES: VENTAS ============ */
-function Ventas({ productos, setProductos, insumos, setInsumos, recetas, ventas, setVentas, costoProducto }) {
+/* ============ COMPONENTES: PEDIDOS ============ */
+function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedidos, setPedidos, setVentas, costoProducto }) {
   const [idProducto, setIdProducto] = useState(productos[0]?.id || "");
   const [cantidad, setCantidad] = useState(1);
   const [cliente, setCliente] = useState("");
   const [medioPago, setMedioPago] = useState("Efectivo");
   const [fecha, setFecha] = useState(todayISO());
+  const [verEntregados, setVerEntregados] = useState(false);
 
   const producto = productos.find((p) => p.id === idProducto);
+  const pendientes = pedidos.filter((p) => p.estado === "Pendiente");
+  const entregados = pedidos.filter((p) => p.estado === "Entregado");
 
-  const registrarVenta = () => {
+  const crearPedido = () => {
     if (!producto || cantidad <= 0) return;
-    const costoUnit = costoProducto(idProducto);
-    const total = producto.precio * cantidad;
-    const ganancia = (producto.precio - costoUnit) * cantidad;
+    setPedidos((prev) => [
+      {
+        id: uid("PED"),
+        fecha,
+        cliente: cliente || "Consumidor final",
+        idProducto,
+        nombreProducto: producto.nombre,
+        cantidad: Number(cantidad),
+        medioPago,
+        estado: "Pendiente",
+      },
+      ...prev,
+    ]);
+    setCantidad(1);
+    setCliente("");
+  };
 
-    setVentas((prev) => [{ id: uid("VTA"), fecha, cliente: cliente || "Consumidor final", idProducto, nombreProducto: producto.nombre, cantidad: Number(cantidad), medioPago, total, ganancia }, ...prev]);
+  const confirmarEntrega = (pedido) => {
+    const costoUnit = costoProducto(pedido.idProducto);
+    const total = (productos.find((p) => p.id === pedido.idProducto)?.precio || 0) * pedido.cantidad;
+    const ganancia = ((productos.find((p) => p.id === pedido.idProducto)?.precio || 0) - costoUnit) * pedido.cantidad;
 
-    // descuenta stock de producto
-    setProductos((prev) => prev.map((p) => (p.id === idProducto ? { ...p, stock: p.stock - cantidad } : p)));
+    // Pasa a Ventas
+    setVentas((prev) => [
+      { id: uid("VTA"), fecha: todayISO(), cliente: pedido.cliente, idProducto: pedido.idProducto, nombreProducto: pedido.nombreProducto, cantidad: pedido.cantidad, medioPago: pedido.medioPago, total, ganancia },
+      ...prev,
+    ]);
 
-    // descuenta stock de insumos según receta
-    const itemsReceta = recetas.filter((r) => r.idProducto === idProducto);
+    // Descuenta stock de producto
+    setProductos((prev) => prev.map((p) => (p.id === pedido.idProducto ? { ...p, stock: p.stock - pedido.cantidad } : p)));
+
+    // Descuenta stock de insumos según receta
+    const itemsReceta = recetas.filter((r) => r.idProducto === pedido.idProducto);
     if (itemsReceta.length) {
       setInsumos((prev) =>
         prev.map((ins) => {
           const linea = itemsReceta.find((r) => r.idInsumo === ins.id);
-          return linea ? { ...ins, stockActual: Math.max(0, ins.stockActual - linea.cantidad * cantidad) } : ins;
+          return linea ? { ...ins, stockActual: Math.max(0, ins.stockActual - linea.cantidad * pedido.cantidad) } : ins;
         })
       );
     }
-    setCantidad(1);
-    setCliente("");
+
+    // Marca el pedido como entregado
+    setPedidos((prev) => prev.map((p) => (p.id === pedido.id ? { ...p, estado: "Entregado", fechaEntrega: todayISO() } : p)));
+  };
+
+  const cancelarPedido = (id) => {
+    if (confirm("¿Cancelar este pedido? No se va a registrar como venta.")) {
+      setPedidos((prev) => prev.filter((p) => p.id !== id));
+    }
   };
 
   return (
     <div>
       <header className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-semibold text-stone-900">Ventas</h1>
-          <p className="text-stone-500 mt-1">Registrá una venta: descuenta stock de producto e insumos automáticamente.</p>
+          <h1 className="font-display text-3xl font-semibold text-stone-900">Pedidos</h1>
+          <p className="text-stone-500 mt-1">Cargá el pedido primero; recién cuando confirmes la entrega pasa a Ventas y se descuenta stock.</p>
         </div>
         <BotonExportar
           onClick={() =>
-            exportarExcel("goat-ventas", {
-              Ventas: ventas.map((v) => ({
-                Fecha: v.fecha,
-                Producto: v.nombreProducto,
-                Cliente: v.cliente,
-                "Medio de pago": v.medioPago,
-                Cantidad: v.cantidad,
-                Total: v.total,
-                Ganancia: Number((v.ganancia || 0).toFixed(2)),
+            exportarExcel("goat-pedidos", {
+              Pedidos: pedidos.map((p) => ({
+                Fecha: p.fecha,
+                Producto: p.nombreProducto,
+                Cliente: p.cliente,
+                "Medio de pago": p.medioPago,
+                Cantidad: p.cantidad,
+                Estado: p.estado,
+                "Fecha entrega": p.fechaEntrega || "",
               })),
             })
           }
@@ -890,17 +948,114 @@ function Ventas({ productos, setProductos, insumos, setInsumos, recetas, ventas,
             <option>Efectivo</option><option>Transferencia</option><option>Tarjeta débito</option><option>Tarjeta crédito</option><option>Mercado Pago</option>
           </select>
         </Field>
-        <Field label="Fecha"><input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="input" /></Field>
+        <Field label="Fecha del pedido"><input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="input" /></Field>
       </div>
       <div className="mb-6 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
         <div className="text-sm text-stone-600">
-          Total: <span className="font-mono-num font-semibold">{fmt((producto?.precio || 0) * cantidad)}</span>
-          {"  ·  "}Ganancia estimada: <span className="font-mono-num font-semibold text-emerald-700">{fmt(((producto?.precio || 0) - costoProducto(idProducto)) * cantidad)}</span>
+          Total estimado: <span className="font-mono-num font-semibold">{fmt((producto?.precio || 0) * cantidad)}</span>
         </div>
-        <button onClick={registrarVenta} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
-          <Icon name="plus" className="w-4 h-4" /> Registrar venta
+        <button onClick={crearPedido} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          <Icon name="plus" className="w-4 h-4" /> Crear pedido
         </button>
       </div>
+
+      <h2 className="font-semibold text-stone-800 mb-2">Pendientes de entrega ({pendientes.length})</h2>
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden mb-8">
+        <table className="w-full text-sm">
+          <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
+            <tr>
+              <th className="text-left px-4 py-3">Fecha</th>
+              <th className="text-left px-4 py-3">Producto</th>
+              <th className="text-left px-4 py-3">Cliente</th>
+              <th className="text-left px-4 py-3">Medio de pago</th>
+              <th className="text-right px-4 py-3">Cant.</th>
+              <th className="px-4 py-3 w-56"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100">
+            {pendientes.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-6 text-center text-stone-400">No hay pedidos pendientes.</td></tr>
+            )}
+            {pendientes.map((p) => (
+              <tr key={p.id} className="hover:bg-stone-50">
+                <td className="px-4 py-2 font-mono-num text-stone-500">{p.fecha}</td>
+                <td className="px-4 py-2">{p.nombreProducto}</td>
+                <td className="px-4 py-2">{p.cliente}</td>
+                <td className="px-4 py-2">{p.medioPago}</td>
+                <td className="px-4 py-2 text-right font-mono-num">{p.cantidad}</td>
+                <td className="px-4 py-2 text-right whitespace-nowrap">
+                  <button onClick={() => confirmarEntrega(p)} className="inline-flex items-center gap-1 bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium mr-2">
+                    <Icon name="check" className="w-3.5 h-3.5" /> Confirmar entrega
+                  </button>
+                  <button onClick={() => cancelarPedido(p.id)} className="text-stone-400 hover:text-red-600">
+                    <Icon name="trash" className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <button onClick={() => setVerEntregados((v) => !v)} className="text-sm text-stone-500 hover:text-stone-700 flex items-center gap-1 mb-2">
+        {verEntregados ? "Ocultar" : "Ver"} entregados ({entregados.length})
+      </button>
+      {verEntregados && (
+        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
+              <tr>
+                <th className="text-left px-4 py-3">Fecha pedido</th>
+                <th className="text-left px-4 py-3">Fecha entrega</th>
+                <th className="text-left px-4 py-3">Producto</th>
+                <th className="text-left px-4 py-3">Cliente</th>
+                <th className="text-right px-4 py-3">Cant.</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100">
+              {entregados.map((p) => (
+                <tr key={p.id}>
+                  <td className="px-4 py-2 font-mono-num text-stone-500">{p.fecha}</td>
+                  <td className="px-4 py-2 font-mono-num text-stone-500">{p.fechaEntrega}</td>
+                  <td className="px-4 py-2">{p.nombreProducto}</td>
+                  <td className="px-4 py-2">{p.cliente}</td>
+                  <td className="px-4 py-2 text-right font-mono-num">{p.cantidad}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <StyleHelper />
+    </div>
+  );
+}
+
+/* ============ COMPONENTES: VENTAS ============ */
+function Ventas({ ventas }) {
+  return (
+    <div>
+      <header className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-semibold text-stone-900">Ventas</h1>
+          <p className="text-stone-500 mt-1">Historial de ventas confirmadas (pedidos ya entregados).</p>
+        </div>
+        <BotonExportar
+          onClick={() =>
+            exportarExcel("goat-ventas", {
+              Ventas: ventas.map((v) => ({
+                Fecha: v.fecha,
+                Producto: v.nombreProducto,
+                Cliente: v.cliente,
+                "Medio de pago": v.medioPago,
+                Cantidad: v.cantidad,
+                Total: v.total,
+                Ganancia: Number((v.ganancia || 0).toFixed(2)),
+              })),
+            })
+          }
+        />
+      </header>
 
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
         <table className="w-full text-sm">
@@ -917,7 +1072,7 @@ function Ventas({ productos, setProductos, insumos, setInsumos, recetas, ventas,
           </thead>
           <tbody className="divide-y divide-stone-100">
             {ventas.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-stone-400">Todavía no registraste ventas.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-stone-400">Todavía no hay ventas confirmadas. Confirmá la entrega de un pedido para que aparezca acá.</td></tr>
             )}
             {ventas.map((v) => (
               <tr key={v.id} className="hover:bg-stone-50">
