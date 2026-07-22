@@ -48,6 +48,18 @@ Abrí `http://localhost:5173`. Si el `.env` está bien configurado, vas a ver "S
 
 Mismo esquema: `npm run build`, arrastrar la carpeta `dist` a **https://app.netlify.com/drop**, y cargar las variables de entorno en **Site settings → Environment variables** (y volver a hacer el build/deploy para que las tome).
 
+## 5) Instalarla como app en el celular (Android)
+
+Una vez que el sitio está publicado (Vercel o Netlify), en el celular:
+
+1. Abrí la URL del sitio con **Chrome**.
+2. Tocá el menú (los tres puntitos, arriba a la derecha).
+3. Elegí **"Instalar app"** o **"Agregar a pantalla de inicio"**.
+4. Confirmá. Va a aparecer un ícono de GOAT en tu pantalla de inicio, igual que cualquier app instalada.
+5. Al abrirla desde ese ícono, se abre a pantalla completa (sin la barra del navegador) y carga más rápido las próximas veces.
+
+No es necesario pasar por Google Play para esto — es el mismo sitio web, pero instalado como app (se llama "PWA"). Sigue necesitando internet para sincronizar con Supabase, igual que antes.
+
 ## Cómo funciona la sincronización
 
 - Todos los dispositivos leen y escriben la misma fila en la tabla `app_data` de Supabase.
