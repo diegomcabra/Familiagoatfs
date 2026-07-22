@@ -245,11 +245,41 @@ export default function GoatApp() {
         .font-mono-num { font-family: 'JetBrains Mono', monospace; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div className="flex">
-        {/* SIDEBAR */}
-        <aside className="w-60 shrink-0 min-h-screen bg-stone-900 text-stone-100 flex flex-col">
+      {/* BARRA SUPERIOR MÓVIL (reemplaza al sidebar en pantallas chicas) */}
+      <div className="md:hidden sticky top-0 z-30 bg-stone-900 text-stone-100">
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <div>
+            <div className="font-display text-2xl tracking-tight text-amber-500 leading-none">GOAT</div>
+            <div className="text-[10px] text-stone-400 mt-0.5 tracking-wide uppercase">Gestión de mixes</div>
+          </div>
+          <div className={`flex items-center gap-1.5 text-[11px] ${syncStatus === "error" ? "text-orange-400" : "text-stone-400"}`}>
+            <Icon name={saveState === "saving" ? "save" : syncStatus === "error" ? "warn" : "check"} className="w-3.5 h-3.5 shrink-0" />
+            {saveState === "saving" ? "Guardando…" : syncStatus === "synced" ? "Sincronizado" : syncStatus === "checking" ? "Conectando…" : syncStatus === "error" ? "Sin conexión" : "Solo local"}
+          </div>
+        </div>
+        <nav className="flex gap-1.5 overflow-x-auto no-scrollbar px-3 pb-3">
+          {NAV.map((n) => (
+            <button
+              key={n.id}
+              onClick={() => setTab(n.id)}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                tab === n.id ? "bg-amber-700 text-white" : "text-stone-300 bg-stone-800/60"
+              }`}
+            >
+              <Icon name={n.icon} className="w-4 h-4" />
+              {n.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <div className="flex flex-col md:flex-row">
+        {/* SIDEBAR (solo escritorio) */}
+        <aside className="hidden md:flex w-60 shrink-0 min-h-screen bg-stone-900 text-stone-100 flex-col">
           <div className="px-6 pt-8 pb-6 border-b border-stone-700/60">
             <div className="font-display text-3xl tracking-tight text-amber-500">GOAT</div>
             <div className="text-xs text-stone-400 mt-1 tracking-wide uppercase">Gestión de mixes</div>
@@ -288,7 +318,7 @@ export default function GoatApp() {
         </aside>
 
         {/* MAIN */}
-        <main className="flex-1 min-w-0 p-8">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 md:p-8">
           {syncStatus === "error" && (
             <div className="mb-4 bg-orange-50 border border-orange-200 text-orange-800 text-sm rounded-xl px-4 py-3 flex items-start gap-2">
               <Icon name="warn" className="w-4 h-4 mt-0.5 shrink-0" />
@@ -415,7 +445,7 @@ function Dashboard({ insumos, productos, recetas, costoProducto, insumosBajoStoc
 
   return (
     <div>
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-semibold text-stone-900">Panel general</h1>
           <p className="text-stone-500 mt-1">Foto actual del negocio: stock, costos y ventas registradas.</p>
@@ -499,7 +529,7 @@ function Insumos({ insumos, setInsumos }) {
 
   return (
     <div>
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-semibold text-stone-900">Insumos</h1>
           <p className="text-stone-500 mt-1">Materia prima: frutos secos, deshidratados, envases y etiquetas.</p>
@@ -532,7 +562,7 @@ function Insumos({ insumos, setInsumos }) {
       />
 
       {adding && (
-        <div className="bg-white border border-amber-300 rounded-xl p-4 mb-4 grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+        <div className="bg-white border border-amber-300 rounded-xl p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
           <Field label="ID (opcional)"><input value={newItem.id} onChange={(e) => setNewItem({ ...newItem, id: e.target.value })} className="input" /></Field>
           <Field label="Nombre"><input value={newItem.nombre} onChange={(e) => setNewItem({ ...newItem, nombre: e.target.value })} className="input" /></Field>
           <Field label="Costo / kg o un."><input type="number" value={newItem.costo} onChange={(e) => setNewItem({ ...newItem, costo: e.target.value })} className="input" /></Field>
@@ -545,7 +575,7 @@ function Insumos({ insumos, setInsumos }) {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
             <tr>
@@ -621,7 +651,7 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
 
   return (
     <div>
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-semibold text-stone-900">Productos terminados</h1>
           <p className="text-stone-500 mt-1">Mixes y productos listos para vender, con precio y stock de bolsas.</p>
@@ -654,7 +684,7 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto por nombre o ID…" className="w-full max-w-md mb-4 px-4 py-2 rounded-lg border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-600" />
 
       {adding && (
-        <div className="bg-white border border-amber-300 rounded-xl p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
+        <div className="bg-white border border-amber-300 rounded-xl p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
           <Field label="ID (opcional)"><input value={newItem.id} onChange={(e) => setNewItem({ ...newItem, id: e.target.value })} className="input" /></Field>
           <Field label="Nombre"><input value={newItem.nombre} onChange={(e) => setNewItem({ ...newItem, nombre: e.target.value })} className="input" /></Field>
           <Field label="Precio de venta"><input type="number" value={newItem.precio} onChange={(e) => setNewItem({ ...newItem, precio: e.target.value })} className="input" /></Field>
@@ -666,7 +696,7 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
             <tr>
@@ -741,7 +771,7 @@ function Recetas({ productos, insumos, recetas, setRecetas, costoProducto }) {
 
   return (
     <div>
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-semibold text-stone-900">Recetas</h1>
           <p className="text-stone-500 mt-1">Definí qué insumos (y cuánta cantidad) lleva cada producto para calcular su costo real.</p>
@@ -790,7 +820,7 @@ function Recetas({ productos, insumos, recetas, setRecetas, costoProducto }) {
         </div>
 
         <div className="md:col-span-2">
-          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
                 <tr>
@@ -913,7 +943,7 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
 
   return (
     <div>
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-semibold text-stone-900">Pedidos</h1>
           <p className="text-stone-500 mt-1">Cargá el pedido primero; recién cuando confirmes la entrega pasa a Ventas y se descuenta stock.</p>
@@ -950,7 +980,7 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
         </Field>
         <Field label="Fecha del pedido"><input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="input" /></Field>
       </div>
-      <div className="mb-6 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
         <div className="text-sm text-stone-600">
           Total estimado: <span className="font-mono-num font-semibold">{fmt((producto?.precio || 0) * cantidad)}</span>
         </div>
@@ -960,7 +990,7 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
       </div>
 
       <h2 className="font-semibold text-stone-800 mb-2">Pendientes de entrega ({pendientes.length})</h2>
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden mb-8">
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
             <tr>
@@ -1001,7 +1031,7 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
         {verEntregados ? "Ocultar" : "Ver"} entregados ({entregados.length})
       </button>
       {verEntregados && (
-        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
               <tr>
@@ -1035,7 +1065,7 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
 function Ventas({ ventas }) {
   return (
     <div>
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-semibold text-stone-900">Ventas</h1>
           <p className="text-stone-500 mt-1">Historial de ventas confirmadas (pedidos ya entregados).</p>
@@ -1057,7 +1087,7 @@ function Ventas({ ventas }) {
         />
       </header>
 
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
             <tr>
@@ -1118,7 +1148,7 @@ function CalculadoraPVP({ productos, recetas, costoProducto }) {
             {productos.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
           </select>
 
-          <div className="mt-4 bg-white rounded-2xl border border-stone-200 overflow-hidden">
+          <div className="mt-4 bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-stone-100 text-stone-600 text-xs uppercase"><tr><th className="text-left px-4 py-2">Insumo</th><th className="text-right px-4 py-2">Costo</th></tr></thead>
               <tbody className="divide-y divide-stone-100">
