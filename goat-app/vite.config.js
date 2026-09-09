@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
-        name: "GOAT · Gestión de mixes",
+        name: "GOAT · Frutos Secos Premium",
         short_name: "GOAT",
         description: "App de gestión de inventario, pedidos, ventas y costos para GOAT.",
         theme_color: "#1c1917",
