@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { supabase, supabaseConfigured } from "./supabaseClient";
 import * as XLSX from "xlsx";
 
@@ -1115,6 +1116,48 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
 }
 
 /* ============ COMPROBANTE IMPRIMIBLE POR CLIENTE ============ */
+function ContenidoComprobante({ grupo, filas, total, fechaHoy }) {
+  return (
+    <div className="p-6">
+      <div className="text-center mb-4">
+        <div className="font-display text-2xl text-amber-700">GOAT</div>
+        <div className="text-xs text-stone-500 uppercase tracking-wide">Gestión de mixes</div>
+      </div>
+      <div className="text-sm mb-4">
+        <div><span className="text-stone-500">Cliente:</span> <strong>{grupo.cliente}</strong></div>
+        <div><span className="text-stone-500">Fecha:</span> {fechaHoy}</div>
+      </div>
+      <table className="w-full text-sm mb-4">
+        <thead>
+          <tr className="border-b border-stone-300">
+            <th className="text-left py-1.5">Producto</th>
+            <th className="text-right py-1.5">Cant.</th>
+            <th className="text-right py-1.5">P. unit.</th>
+            <th className="text-right py-1.5">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.map((f) => (
+            <tr key={f.id} className="border-b border-stone-100">
+              <td className="py-1.5">{f.nombreProducto}</td>
+              <td className="py-1.5 text-right font-mono-num">{f.cantidad}</td>
+              <td className="py-1.5 text-right font-mono-num">{fmt(f.precioUnitario)}</td>
+              <td className="py-1.5 text-right font-mono-num">{fmt(f.subtotal)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="flex justify-end">
+        <div className="text-right">
+          <div className="text-xs text-stone-500 uppercase tracking-wide">Total</div>
+          <div className="font-mono-num text-2xl font-semibold">{fmt(total)}</div>
+        </div>
+      </div>
+      <div className="text-center text-xs text-stone-400 mt-8">¡Gracias por tu compra!</div>
+    </div>
+  );
+}
+
 function ComprobanteCliente({ grupo, productos, onClose }) {
   const filas = grupo.items.map((p) => {
     const precio = productos.find((prod) => prod.id === p.idProducto)?.precio || 0;
@@ -1124,59 +1167,31 @@ function ComprobanteCliente({ grupo, productos, onClose }) {
   const fechaHoy = new Date().toLocaleDateString("es-AR");
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-900/60 flex items-center justify-center p-4 no-imprimir">
-      <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        {/* Barra de acciones: no se imprime */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-stone-200 sticky top-0 bg-white">
-          <h3 className="font-display text-xl">Comprobante — {grupo.cliente}</h3>
-          <div className="flex gap-2">
-            <button onClick={() => window.print()} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
-              <Icon name="download" className="w-4 h-4" /> Imprimir
-            </button>
-            <button onClick={onClose} className="px-3 py-1.5 rounded-lg text-sm text-stone-500 hover:bg-stone-100">Cerrar</button>
-          </div>
-        </div>
-
-        {/* Contenido imprimible */}
-        <div id="comprobante-imprimible" className="p-6">
-          <div className="text-center mb-4">
-            <div className="font-display text-2xl text-amber-700">GOAT</div>
-            <div className="text-xs text-stone-500 uppercase tracking-wide">Gestión de mixes</div>
-          </div>
-          <div className="text-sm mb-4">
-            <div><span className="text-stone-500">Cliente:</span> <strong>{grupo.cliente}</strong></div>
-            <div><span className="text-stone-500">Fecha:</span> {fechaHoy}</div>
-          </div>
-          <table className="w-full text-sm mb-4">
-            <thead>
-              <tr className="border-b border-stone-300">
-                <th className="text-left py-1.5">Producto</th>
-                <th className="text-right py-1.5">Cant.</th>
-                <th className="text-right py-1.5">P. unit.</th>
-                <th className="text-right py-1.5">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filas.map((f) => (
-                <tr key={f.id} className="border-b border-stone-100">
-                  <td className="py-1.5">{f.nombreProducto}</td>
-                  <td className="py-1.5 text-right font-mono-num">{f.cantidad}</td>
-                  <td className="py-1.5 text-right font-mono-num">{fmt(f.precioUnitario)}</td>
-                  <td className="py-1.5 text-right font-mono-num">{fmt(f.subtotal)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-end">
-            <div className="text-right">
-              <div className="text-xs text-stone-500 uppercase tracking-wide">Total</div>
-              <div className="font-mono-num text-2xl font-semibold">{fmt(total)}</div>
+    <>
+      {/* Modal de vista previa en pantalla (no se imprime: #root desaparece al imprimir) */}
+      <div className="fixed inset-0 z-50 bg-stone-900/60 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-stone-200 sticky top-0 bg-white">
+            <h3 className="font-display text-xl">Comprobante — {grupo.cliente}</h3>
+            <div className="flex gap-2">
+              <button onClick={() => window.print()} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                <Icon name="download" className="w-4 h-4" /> Imprimir
+              </button>
+              <button onClick={onClose} className="px-3 py-1.5 rounded-lg text-sm text-stone-500 hover:bg-stone-100">Cerrar</button>
             </div>
           </div>
-          <div className="text-center text-xs text-stone-400 mt-8">¡Gracias por tu compra!</div>
+          <ContenidoComprobante grupo={grupo} filas={filas} total={total} fechaHoy={fechaHoy} />
         </div>
       </div>
-    </div>
+
+      {/* Copia del contenido, montada directo en <body> (fuera de #root) solo para imprimir */}
+      {createPortal(
+        <div id="comprobante-imprimible">
+          <ContenidoComprobante grupo={grupo} filas={filas} total={total} fechaHoy={fechaHoy} />
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
 
