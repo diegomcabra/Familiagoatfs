@@ -6,3 +6,16 @@
 .font-mono-num { font-family: 'JetBrains Mono', monospace; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+
+/* Impresión de comprobantes: al imprimir, solo se ve el comprobante activo */
+@media print {
+  body * { visibility: hidden; }
+  #comprobante-imprimible, #comprobante-imprimible * { visibility: visible; }
+  #comprobante-imprimible {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  .no-imprimir { display: none !important; }
+}

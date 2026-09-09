@@ -882,10 +882,27 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
   const [medioPago, setMedioPago] = useState("Efectivo");
   const [fecha, setFecha] = useState(todayISO());
   const [verEntregados, setVerEntregados] = useState(false);
+  const [clienteAImprimir, setClienteAImprimir] = useState(null);
 
   const producto = productos.find((p) => p.id === idProducto);
   const pendientes = pedidos.filter((p) => p.estado === "Pendiente");
   const entregados = pedidos.filter((p) => p.estado === "Entregado");
+
+  // Agrupa los pedidos pendientes por cliente, para poder imprimir un comprobante consolidado
+  const pendientesPorCliente = useMemo(() => {
+    const grupos = {};
+    pendientes.forEach((p) => {
+      if (!grupos[p.cliente]) grupos[p.cliente] = [];
+      grupos[p.cliente].push(p);
+    });
+    return Object.entries(grupos).map(([cliente, items]) => {
+      const totalCliente = items.reduce((sum, p) => {
+        const precio = productos.find((prod) => prod.id === p.idProducto)?.precio || 0;
+        return sum + precio * p.cantidad;
+      }, 0);
+      return { cliente, items, totalCliente };
+    });
+  }, [pendientes, productos]);
 
   const crearPedido = () => {
     if (!producto || cantidad <= 0) return;
@@ -989,6 +1006,37 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
         </button>
       </div>
 
+      <h2 className="font-semibold text-stone-800 mb-2">Pendientes por cliente ({pendientesPorCliente.length})</h2>
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto mb-8">
+        <table className="w-full text-sm">
+          <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
+            <tr>
+              <th className="text-left px-4 py-3">Cliente</th>
+              <th className="text-right px-4 py-3">Ítems</th>
+              <th className="text-right px-4 py-3">Total</th>
+              <th className="px-4 py-3 w-40"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100">
+            {pendientesPorCliente.length === 0 && (
+              <tr><td colSpan={4} className="px-4 py-6 text-center text-stone-400">No hay pedidos pendientes.</td></tr>
+            )}
+            {pendientesPorCliente.map((g) => (
+              <tr key={g.cliente} className="hover:bg-stone-50">
+                <td className="px-4 py-3 font-medium">{g.cliente}</td>
+                <td className="px-4 py-3 text-right font-mono-num">{g.items.length}</td>
+                <td className="px-4 py-3 text-right font-mono-num">{fmt(g.totalCliente)}</td>
+                <td className="px-4 py-3 text-right">
+                  <button onClick={() => setClienteAImprimir(g)} className="inline-flex items-center gap-1 border border-stone-300 hover:bg-stone-100 text-stone-700 px-3 py-1.5 rounded-lg text-xs font-medium">
+                    <Icon name="download" className="w-3.5 h-3.5" /> Comprobante
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       <h2 className="font-semibold text-stone-800 mb-2">Pendientes de entrega ({pendientes.length})</h2>
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto mb-8">
         <table className="w-full text-sm">
@@ -1056,7 +1104,78 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
           </table>
         </div>
       )}
+
+      {clienteAImprimir && (
+        <ComprobanteCliente grupo={clienteAImprimir} productos={productos} onClose={() => setClienteAImprimir(null)} />
+      )}
+
       <StyleHelper />
+    </div>
+  );
+}
+
+/* ============ COMPROBANTE IMPRIMIBLE POR CLIENTE ============ */
+function ComprobanteCliente({ grupo, productos, onClose }) {
+  const filas = grupo.items.map((p) => {
+    const precio = productos.find((prod) => prod.id === p.idProducto)?.precio || 0;
+    return { ...p, precioUnitario: precio, subtotal: precio * p.cantidad };
+  });
+  const total = filas.reduce((s, f) => s + f.subtotal, 0);
+  const fechaHoy = new Date().toLocaleDateString("es-AR");
+
+  return (
+    <div className="fixed inset-0 z-50 bg-stone-900/60 flex items-center justify-center p-4 no-imprimir">
+      <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        {/* Barra de acciones: no se imprime */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-stone-200 sticky top-0 bg-white">
+          <h3 className="font-display text-xl">Comprobante — {grupo.cliente}</h3>
+          <div className="flex gap-2">
+            <button onClick={() => window.print()} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+              <Icon name="download" className="w-4 h-4" /> Imprimir
+            </button>
+            <button onClick={onClose} className="px-3 py-1.5 rounded-lg text-sm text-stone-500 hover:bg-stone-100">Cerrar</button>
+          </div>
+        </div>
+
+        {/* Contenido imprimible */}
+        <div id="comprobante-imprimible" className="p-6">
+          <div className="text-center mb-4">
+            <div className="font-display text-2xl text-amber-700">GOAT</div>
+            <div className="text-xs text-stone-500 uppercase tracking-wide">Gestión de mixes</div>
+          </div>
+          <div className="text-sm mb-4">
+            <div><span className="text-stone-500">Cliente:</span> <strong>{grupo.cliente}</strong></div>
+            <div><span className="text-stone-500">Fecha:</span> {fechaHoy}</div>
+          </div>
+          <table className="w-full text-sm mb-4">
+            <thead>
+              <tr className="border-b border-stone-300">
+                <th className="text-left py-1.5">Producto</th>
+                <th className="text-right py-1.5">Cant.</th>
+                <th className="text-right py-1.5">P. unit.</th>
+                <th className="text-right py-1.5">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filas.map((f) => (
+                <tr key={f.id} className="border-b border-stone-100">
+                  <td className="py-1.5">{f.nombreProducto}</td>
+                  <td className="py-1.5 text-right font-mono-num">{f.cantidad}</td>
+                  <td className="py-1.5 text-right font-mono-num">{fmt(f.precioUnitario)}</td>
+                  <td className="py-1.5 text-right font-mono-num">{fmt(f.subtotal)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="flex justify-end">
+            <div className="text-right">
+              <div className="text-xs text-stone-500 uppercase tracking-wide">Total</div>
+              <div className="font-mono-num text-2xl font-semibold">{fmt(total)}</div>
+            </div>
+          </div>
+          <div className="text-center text-xs text-stone-400 mt-8">¡Gracias por tu compra!</div>
+        </div>
+      </div>
     </div>
   );
 }
