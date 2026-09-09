@@ -255,7 +255,7 @@ export default function GoatApp() {
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div>
             <div className="font-display text-2xl tracking-tight text-amber-500 leading-none">GOAT</div>
-            <div className="text-[10px] text-stone-400 mt-0.5 tracking-wide uppercase">Gestión de mixes</div>
+            <div className="text-[10px] text-stone-400 mt-0.5 tracking-wide uppercase">Frutos Secos Premium</div>
           </div>
           <div className={`flex items-center gap-1.5 text-[11px] ${syncStatus === "error" ? "text-orange-400" : "text-stone-400"}`}>
             <Icon name={saveState === "saving" ? "save" : syncStatus === "error" ? "warn" : "check"} className="w-3.5 h-3.5 shrink-0" />
@@ -283,7 +283,7 @@ export default function GoatApp() {
         <aside className="hidden md:flex w-60 shrink-0 min-h-screen bg-stone-900 text-stone-100 flex-col">
           <div className="px-6 pt-8 pb-6 border-b border-stone-700/60">
             <div className="font-display text-3xl tracking-tight text-amber-500">GOAT</div>
-            <div className="text-xs text-stone-400 mt-1 tracking-wide uppercase">Gestión de mixes</div>
+            <div className="text-xs text-stone-400 mt-1 tracking-wide uppercase">Frutos Secos Premium</div>
           </div>
           <nav className="flex-1 px-3 py-4 space-y-1">
             {NAV.map((n) => (
@@ -1121,7 +1121,7 @@ function ContenidoComprobante({ grupo, filas, total, fechaHoy }) {
     <div className="p-6">
       <div className="text-center mb-4">
         <div className="font-display text-2xl text-amber-700">GOAT</div>
-        <div className="text-xs text-stone-500 uppercase tracking-wide">Gestión de mixes</div>
+        <div className="text-xs text-stone-500 uppercase tracking-wide">Frutos Secos Premium</div>
       </div>
       <div className="text-sm mb-4">
         <div><span className="text-stone-500">Cliente:</span> <strong>{grupo.cliente}</strong></div>
