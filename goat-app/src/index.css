@@ -7,14 +7,15 @@
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
 
-/* Impresión de comprobantes.
-   #comprobante-imprimible se renderiza fuera de #root (con un portal de React),
+/* Impresión de comprobantes y listas.
+   #zona-imprimible se renderiza fuera de #root (con un portal de React),
    directo dentro de <body>. Así, al imprimir, ocultamos TODA la app (#root,
-   que desaparece del documento y no reserva espacio) y mostramos solo el
-   comprobante — evitando las páginas en blanco que deja "visibility: hidden". */
-#comprobante-imprimible { display: none; }
+   que desaparece del documento y no reserva espacio) y mostramos solo lo
+   que corresponda imprimir — evitando las páginas en blanco que deja
+   "visibility: hidden". */
+#zona-imprimible { display: none; }
 
 @media print {
   #root { display: none !important; }
-  #comprobante-imprimible { display: block !important; }
+  #zona-imprimible { display: block !important; }
 }

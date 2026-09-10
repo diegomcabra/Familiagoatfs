@@ -6,7 +6,7 @@ import * as XLSX from "xlsx";
 /* ============ DATOS INICIALES (desde Familia_Goat.xlsx) ============ */
 const INSUMOS_INICIALES = [{"id": "INS001", "nombre": "Nuez Pelada Mariposa Extra Light", "costo": 16605.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS002", "nombre": "Nuez de Pecan Partida", "costo": 25300.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS003", "nombre": "Avellanas Peladas Grandes - Origen Turquía", "costo": 35100.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS004", "nombre": "Almendra Pelada Non Pareil GRANDE 25/27 - Chile", "costo": 23985.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS005", "nombre": "Castaña de Cajú Natural W4 - Origen Brasil", "costo": 18900.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS006", "nombre": "Chips de Banana Deshidroazucaradas", "costo": 9880.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS007", "nombre": "Pistachos pelados naturales", "costo": 57710.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS008", "nombre": "Maní Tostado Sin Sal Bolsa", "costo": 2400.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS009", "nombre": "Mani repelado tostado con sal", "costo": 2375.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS010", "nombre": "Mani Japones crocante", "costo": 3000.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS011", "nombre": "Castañas de caju tostadas y saladas", "costo": 19989.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS012", "nombre": "Habas Fritas Saladas", "costo": 12272.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS013", "nombre": "Maiz crocante original", "costo": 10104.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS014", "nombre": "Castañas de Para entera Natural", "costo": 34850.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS015", "nombre": "Arándanos Rojos CHILE (Fruta desecada)", "costo": 15195.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS016", "nombre": "Pasas de uva negras Jumbo", "costo": 5690.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS017", "nombre": "Pasas de uva rubias", "costo": 7380.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS018", "nombre": "Gotas de Chocolate", "costo": 4799.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS019", "nombre": "Coco en Escamas (Sin marca)", "costo": 14200.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS020", "nombre": "Castañas de caju tostadas", "costo": 20500.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS022", "nombre": "Oregano Nacional", "costo": 4800.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS023", "nombre": "Aji molido", "costo": 4799.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS024", "nombre": "Provenzal", "costo": 4999.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS025", "nombre": "Pimenton Ahumado", "costo": 4599.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS026", "nombre": "Hongos Secos Boletus", "costo": 29375.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS027", "nombre": "Tomates Secos PREMIUM", "costo": 14714.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS028", "nombre": "Semilla de Zapallo Pelada AAA - SUPER PREMIUM (Sin marca)", "costo": 13400.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS029", "nombre": "Semilla de Girasol Pelado PREMIUM", "costo": 3600.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS030", "nombre": "Ajo Granulado Blanco Standard", "costo": 8500.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS031", "nombre": "Canela Rama", "costo": 22000.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS032", "nombre": "Sal marina finas hierbas ahumada (sin tacc) Dicomere 450gr", "costo": 1535.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS034", "nombre": "Etiquetas 4 cm", "costo": 211.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS035", "nombre": "Etiquetas 5 cm", "costo": 211.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS036", "nombre": "Etiquetas 7 cm", "costo": 211.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS037", "nombre": "Bolsa Doypack Metalizado 20x30", "costo": 314.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS038", "nombre": "Bolsa Doypack Metalizado 16X24", "costo": 345.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS039", "nombre": "Bolsa Doypack Metalizado 10X15 + 3CM", "costo": 124.8, "stockActual": 0, "stockMinimo": 0}, {"id": "INS040", "nombre": "Bolsa Doypack 13x22 Kraft", "costo": 220.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS041", "nombre": "Bolsa Doypack 13x25 Metalizado", "costo": 200.0, "stockActual": 0, "stockMinimo": 0}, {"id": "INS042", "nombre": "Bolsa Doypack 12x20 Metalizado", "costo": 152.0, "stockActual": 0, "stockMinimo": 0}];
 
-const PRODUCTOS_INICIALES = [{"id": "PR001", "nombre": "Mix GOAT Clásico 1kg", "precio": 28455, "stock": 0}, {"id": "PR002", "nombre": "Mix GOAT Clásico 500g", "precio": 15684, "stock": 0}, {"id": "PR003", "nombre": "Mix GOAT Clásico 250g", "precio": 8259, "stock": 0}, {"id": "PR004", "nombre": "Mix GOAT Clásico 100g", "precio": 3705.28, "stock": 0}, {"id": "PR005", "nombre": "Mix GOAT Clásico Chocolate 1kg", "precio": 27342.6, "stock": 0}, {"id": "PR006", "nombre": "Mix GOAT Clásico Chocolate 500g", "precio": 14111.55, "stock": 0}, {"id": "PR007", "nombre": "Mix GOAT Clásico Chocolate 250g", "precio": 7472.77, "stock": 0}, {"id": "PR008", "nombre": "Mix GOAT Clásico Chocolate 100g", "precio": 3369.82, "stock": 0}, {"id": "PR009", "nombre": "Mix GOAT Premium Pistacho 1kg", "precio": 39401.6, "stock": 0}, {"id": "PR010", "nombre": "Mix GOAT Premium Pistacho 500g", "precio": 21548.25, "stock": 0}, {"id": "PR011", "nombre": "Mix GOAT Premium Pistacho 250g", "precio": 11191.12, "stock": 0}, {"id": "PR012", "nombre": "Mix GOAT Premium Pistacho 100g", "precio": 4956.32, "stock": 0}, {"id": "PR013", "nombre": "Mix GOAT Premium Pecan 1kg", "precio": 30326.8, "stock": 0}, {"id": "PR014", "nombre": "Mix GOAT Premium Pecan 500g", "precio": 16686.75, "stock": 0}, {"id": "PR015", "nombre": "Mix GOAT Premium Pecan 250g", "precio": 8760.38, "stock": 0}, {"id": "PR016", "nombre": "Mix GOAT Premium Pecan 100g", "precio": 3919.2, "stock": 0}, {"id": "PR017", "nombre": "Mix GOAT Premium Arándanos 1kg", "precio": 27540.1, "stock": 0}, {"id": "PR018", "nombre": "Mix GOAT Premium Arándanos 500g", "precio": 15193.88, "stock": 0}, {"id": "PR019", "nombre": "Mix GOAT Premium Arándanos 250g", "precio": 8013.94, "stock": 0}, {"id": "PR020", "nombre": "Mix GOAT Premium Arándanos 100g", "precio": 3600.72, "stock": 0}, {"id": "PR021", "nombre": "Mix GOAT Energético 1kg", "precio": 30980.6, "stock": 0}, {"id": "PR022", "nombre": "Mix GOAT Energético 500g", "precio": 17037, "stock": 0}, {"id": "PR023", "nombre": "Mix GOAT Energético 250g", "precio": 8935.5, "stock": 0}, {"id": "PR024", "nombre": "Mix GOAT Energético 100g", "precio": 3993.92, "stock": 0}, {"id": "PR025", "nombre": "Mix GOAT Almendra y Coco 1kg", "precio": 12713.4, "stock": 0}, {"id": "PR026", "nombre": "Mix GOAT Almendra y Coco 500g", "precio": 7251, "stock": 0}, {"id": "PR027", "nombre": "Mix GOAT Almendra y Coco 250g", "precio": 4042.5, "stock": 0}, {"id": "PR028", "nombre": "Mix GOAT Almendra y Coco 100g", "precio": 1906.24, "stock": 0}, {"id": "PR029", "nombre": "Mix GOAT Coco 1kg", "precio": 10891.3, "stock": 0}, {"id": "PR030", "nombre": "Mix GOAT Coco 500g", "precio": 6274.88, "stock": 0}, {"id": "PR031", "nombre": "Mix GOAT Coco 250g", "precio": 3554.44, "stock": 0}, {"id": "PR032", "nombre": "Mix GOAT Coco 100g", "precio": 1698, "stock": 0}, {"id": "PR033", "nombre": "Mix GOAT Cervecero 1kg", "precio": 16170.15, "stock": 0}, {"id": "PR034", "nombre": "Mix GOAT Cervecero 500g", "precio": 8525.33, "stock": 0}, {"id": "PR035", "nombre": "Mix GOAT Cervecero 250g", "precio": 4679.66, "stock": 0}, {"id": "PR036", "nombre": "Mix GOAT Cervecero 100g", "precio": 2178.1, "stock": 0}, {"id": "PR037", "nombre": "Mix GOAT Cervecero Japonés 1kg", "precio": 17520.15, "stock": 0}, {"id": "PR038", "nombre": "Mix GOAT Cervecero Japonés 500g", "precio": 9200.33, "stock": 0}, {"id": "PR039", "nombre": "Mix GOAT Cervecero Japonés 250g", "precio": 5017.16, "stock": 0}, {"id": "PR040", "nombre": "Mix GOAT Cervecero Japonés 100g", "precio": 2322.1, "stock": 0}, {"id": "PR041", "nombre": "Almendra Pelada Non Pareil Grande 1kg", "precio": 34314, "stock": 0}, {"id": "PR042", "nombre": "Almendra Pelada Non Pareil Grande 500g", "precio": 18822.75, "stock": 0}, {"id": "PR043", "nombre": "Almendra Pelada Non Pareil Grande 250g", "precio": 9828.38, "stock": 0}, {"id": "PR044", "nombre": "Almendra Pelada Non Pareil Grande 100g", "precio": 4374.88, "stock": 0}, {"id": "PR045", "nombre": "Nuez Pelada Mariposa Extra Light 1kg", "precio": 23982, "stock": 0}, {"id": "PR046", "nombre": "Nuez Pelada Mariposa Extra Light 500g", "precio": 13287.75, "stock": 0}, {"id": "PR047", "nombre": "Nuez Pelada Mariposa Extra Light 250g", "precio": 7060.88, "stock": 0}, {"id": "PR048", "nombre": "Nuez Pelada Mariposa Extra Light 100g", "precio": 3194.08, "stock": 0}, {"id": "PR049", "nombre": "Nuez de Pecan Partida 1kg", "precio": 36155, "stock": 0}, {"id": "PR050", "nombre": "Nuez de Pecan Partida 500g", "precio": 19809, "stock": 0}, {"id": "PR051", "nombre": "Nuez de Pecan Partida 250g", "precio": 10321.5, "stock": 0}, {"id": "PR052", "nombre": "Nuez de Pecan Partida 100g", "precio": 4585.28, "stock": 0}, {"id": "PR053", "nombre": "Pistacho pelado sin sal 1kg", "precio": 81529, "stock": 0}, {"id": "PR054", "nombre": "Pistacho pelado sin sal 500g", "precio": 44116.5, "stock": 0}, {"id": "PR055", "nombre": "Pistacho pelado sin sal 250g", "precio": 22475.25, "stock": 0}, {"id": "PR056", "nombre": "Pistacho pelado sin sal 100g", "precio": 9770.88, "stock": 0}, {"id": "PR057", "nombre": "Castaña de Cajú Natural 1kg", "precio": 27195, "stock": 0}, {"id": "PR058", "nombre": "Castaña de Cajú Natural 500g", "precio": 15009, "stock": 0}, {"id": "PR059", "nombre": "Castaña de Cajú Natural 250g", "precio": 7921.5, "stock": 0}, {"id": "PR060", "nombre": "Castaña de Cajú Natural 100g", "precio": 3561.28, "stock": 0}, {"id": "PR061", "nombre": "Castañas de caju tostadas 1kg", "precio": 29435, "stock": 0}, {"id": "PR062", "nombre": "Castañas de caju tostadas 500g", "precio": 16209, "stock": 0}, {"id": "PR063", "nombre": "Castañas de caju tostadas 250g", "precio": 8521.5, "stock": 0}, {"id": "PR064", "nombre": "Castañas de caju tostadas 100g", "precio": 3817.28, "stock": 0}, {"id": "PR065", "nombre": "Castañas de caju tostadas y saladas 1kg", "precio": 28719.6, "stock": 0}, {"id": "PR066", "nombre": "Castañas de caju tostadas y saladas 500g", "precio": 15825.75, "stock": 0}, {"id": "PR067", "nombre": "Castañas de caju tostadas y saladas 250g", "precio": 8329.88, "stock": 0}, {"id": "PR068", "nombre": "Castañas de caju tostadas y saladas 100g", "precio": 3735.52, "stock": 0}, {"id": "PR069", "nombre": "Maní Tostado Sin Sal Bolsa 1kg", "precio": 4095, "stock": 0}, {"id": "PR070", "nombre": "Maní Tostado Sin Sal Bolsa 500g", "precio": 2634, "stock": 0}, {"id": "PR071", "nombre": "Maní Tostado Sin Sal Bolsa 250g", "precio": 1734, "stock": 0}, {"id": "PR072", "nombre": "Maní Tostado Sin Sal Bolsa 100g", "precio": 921.28, "stock": 0}, {"id": "PR073", "nombre": "Maní Japones 1kg", "precio": 5287.5, "stock": 0}, {"id": "PR074", "nombre": "Maní Japones 500g", "precio": 3084, "stock": 0}, {"id": "PR075", "nombre": "Maní Japones 250g", "precio": 1959, "stock": 0}, {"id": "PR076", "nombre": "Maní Japones 100g", "precio": 953.7, "stock": 0}, {"id": "PR077", "nombre": "Mano Tostado con sal 1kg", "precio": 4350, "stock": 0}, {"id": "PR078", "nombre": "Mano Tostado con sal 500g", "precio": 2615.25, "stock": 0}, {"id": "PR079", "nombre": "Mano Tostado con sal 250g", "precio": 1724.62, "stock": 0}, {"id": "PR080", "nombre": "Mano Tostado con sal 100g", "precio": 859.95, "stock": 0}, {"id": "PR081", "nombre": "Arándanos Rojos CHILE 1kg", "precio": 22008, "stock": 0}, {"id": "PR082", "nombre": "Arándanos Rojos CHILE 500g", "precio": 12230.25, "stock": 0}, {"id": "PR083", "nombre": "Arándanos Rojos CHILE 250g", "precio": 6532.12, "stock": 0}, {"id": "PR084", "nombre": "Arándanos Rojos CHILE 100g", "precio": 2968.48, "stock": 0}, {"id": "PR085", "nombre": "Pasas de uva negras Jumbo 1kg", "precio": 8701, "stock": 0}, {"id": "PR086", "nombre": "Pasas de uva negras Jumbo 500g", "precio": 5101.5, "stock": 0}, {"id": "PR087", "nombre": "Pasas de uva negras Jumbo 250g", "precio": 2967.75, "stock": 0}, {"id": "PR088", "nombre": "Pasas de uva negras Jumbo 100g", "precio": 1447.68, "stock": 0}, {"id": "PR089", "nombre": "Pasas de uva rubias 1kg", "precio": 11067, "stock": 0}, {"id": "PR090", "nombre": "Pasas de uva rubias 500g", "precio": 6369, "stock": 0}, {"id": "PR091", "nombre": "Pasas de uva rubias 250g", "precio": 3601.5, "stock": 0}, {"id": "PR092", "nombre": "Pasas de uva rubias 100g", "precio": 1718.08, "stock": 0}, {"id": "PR093", "nombre": "Chips de Banana 1kg", "precio": 14021, "stock": 0}, {"id": "PR094", "nombre": "Chips de Banana 500g", "precio": 8244, "stock": 0}, {"id": "PR095", "nombre": "Chips de Banana 250g", "precio": 4539, "stock": 0}, {"id": "PR096", "nombre": "Chips de Banana 100g", "precio": 2118.08, "stock": 0}, {"id": "PR099", "nombre": "Provenzal GOAT", "precio": 0, "stock": 0}, {"id": "PR100", "nombre": "Aji molido GOAT", "precio": 0, "stock": 0}, {"id": "PR101", "nombre": "Oregano Nacional", "precio": 0, "stock": 0}, {"id": "PR102", "nombre": "Semilla de Zapallo Pelada  GOAT", "precio": 0, "stock": 0}, {"id": "PR103", "nombre": "Semilla de Girasol Pelado PREMIUM", "precio": 0, "stock": 0}, {"id": "PR104", "nombre": "Hongos Secos Boletus", "precio": 0, "stock": 0}, {"id": "PR105", "nombre": "Tomates Secos PREMIUM", "precio": 0, "stock": 0}];
+const PRODUCTOS_INICIALES = [{"id": "PR001", "nombre": "Mix GOAT Clásico 1kg", "categoria": "Mixes Especiales", "precio": 29800, "stock": 0}, {"id": "PR002", "nombre": "Mix GOAT Clásico 500g", "categoria": "Mixes Especiales", "precio": 15900, "stock": 0}, {"id": "PR003", "nombre": "Mix GOAT Clásico 250g", "categoria": "Mixes Especiales", "precio": 8200, "stock": 0}, {"id": "PR004", "nombre": "Mix GOAT Clásico 100g", "categoria": "Mixes Especiales", "precio": 4400, "stock": 0}, {"id": "PR005", "nombre": "Mix GOAT Clásico Chocolate 1kg", "categoria": "Mixes Especiales", "precio": 29800, "stock": 0}, {"id": "PR006", "nombre": "Mix GOAT Clásico Chocolate 500g", "categoria": "Mixes Especiales", "precio": 15900, "stock": 0}, {"id": "PR007", "nombre": "Mix GOAT Clásico Chocolate 250g", "categoria": "Mixes Especiales", "precio": 8200, "stock": 0}, {"id": "PR008", "nombre": "Mix GOAT Clásico Chocolate 100g", "categoria": "Mixes Especiales", "precio": 4400, "stock": 0}, {"id": "PR009", "nombre": "Mix GOAT Premium Pistacho 1kg", "categoria": "Mixes Especiales", "precio": 39100, "stock": 0}, {"id": "PR010", "nombre": "Mix GOAT Premium Pistacho 500g", "categoria": "Mixes Especiales", "precio": 20600, "stock": 0}, {"id": "PR011", "nombre": "Mix GOAT Premium Pistacho 250g", "categoria": "Mixes Especiales", "precio": 11300, "stock": 0}, {"id": "PR012", "nombre": "Mix GOAT Premium Pistacho 100g", "categoria": "Mixes Especiales", "precio": 5100, "stock": 0}, {"id": "PR013", "nombre": "Mix GOAT Premium Pecan 1kg", "categoria": "Mixes Especiales", "precio": 33900, "stock": 0}, {"id": "PR014", "nombre": "Mix GOAT Premium Pecan 500g", "categoria": "Mixes Especiales", "precio": 18500, "stock": 0}, {"id": "PR015", "nombre": "Mix GOAT Premium Pecan 250g", "categoria": "Mixes Especiales", "precio": 9700, "stock": 0}, {"id": "PR016", "nombre": "Mix GOAT Premium Pecan 100g", "categoria": "Mixes Especiales", "precio": 4400, "stock": 0}, {"id": "PR017", "nombre": "Mix GOAT Premium Arándanos 1kg", "categoria": "Mixes Especiales", "precio": 29800, "stock": 0}, {"id": "PR018", "nombre": "Mix GOAT Premium Arándanos 500g", "categoria": "Mixes Especiales", "precio": 15900, "stock": 0}, {"id": "PR019", "nombre": "Mix GOAT Premium Arándanos 250g", "categoria": "Mixes Especiales", "precio": 8200, "stock": 0}, {"id": "PR020", "nombre": "Mix GOAT Premium Arándanos 100g", "categoria": "Mixes Especiales", "precio": 3900, "stock": 0}, {"id": "PR021", "nombre": "Mix GOAT Energético 1kg", "categoria": "Mixes Especiales", "precio": 31900, "stock": 0}, {"id": "PR022", "nombre": "Mix GOAT Energético 500g", "categoria": "Mixes Especiales", "precio": 17500, "stock": 0}, {"id": "PR023", "nombre": "Mix GOAT Energético 250g", "categoria": "Mixes Especiales", "precio": 8700, "stock": 0}, {"id": "PR024", "nombre": "Mix GOAT Energético 100g", "categoria": "Mixes Especiales", "precio": 4100, "stock": 0}, {"id": "PR025", "nombre": "Mix GOAT Almendra y Coco 1kg", "categoria": "Mixes Especiales", "precio": 19500, "stock": 0}, {"id": "PR026", "nombre": "Mix GOAT Almendra y Coco 500g", "categoria": "Mixes Especiales", "precio": 10800, "stock": 0}, {"id": "PR027", "nombre": "Mix GOAT Almendra y Coco 250g", "categoria": "Mixes Especiales", "precio": 5600, "stock": 0}, {"id": "PR028", "nombre": "Mix GOAT Almendra y Coco 100g", "categoria": "Mixes Especiales", "precio": 3000, "stock": 0}, {"id": "PR029", "nombre": "Mix GOAT Coco 1kg", "categoria": "Mixes Especiales", "precio": 17500, "stock": 0}, {"id": "PR030", "nombre": "Mix GOAT Coco 500g", "categoria": "Mixes Especiales", "precio": 9200, "stock": 0}, {"id": "PR031", "nombre": "Mix GOAT Coco 250g", "categoria": "Mixes Especiales", "precio": 5100, "stock": 0}, {"id": "PR032", "nombre": "Mix GOAT Coco 100g", "categoria": "Mixes Especiales", "precio": 2500, "stock": 0}, {"id": "PR033", "nombre": "Mix GOAT Cervecero 1kg", "categoria": "Mixes Especiales", "precio": 18500, "stock": 0}, {"id": "PR034", "nombre": "Mix GOAT Cervecero 500g", "categoria": "Mixes Especiales", "precio": 10000, "stock": 0}, {"id": "PR035", "nombre": "Mix GOAT Cervecero 250g", "categoria": "Mixes Especiales", "precio": 5100, "stock": 0}, {"id": "PR036", "nombre": "Mix GOAT Cervecero 100g", "categoria": "Mixes Especiales", "precio": 3000, "stock": 0}, {"id": "PR037", "nombre": "Mix GOAT Cervecero Japonés 1kg", "categoria": "Mixes Especiales", "precio": 18500, "stock": 0}, {"id": "PR038", "nombre": "Mix GOAT Cervecero Japonés 500g", "categoria": "Mixes Especiales", "precio": 10000, "stock": 0}, {"id": "PR039", "nombre": "Mix GOAT Cervecero Japonés 250g", "categoria": "Mixes Especiales", "precio": 5100, "stock": 0}, {"id": "PR040", "nombre": "Mix GOAT Cervecero Japonés 100g", "categoria": "Mixes Especiales", "precio": 3000, "stock": 0}, {"id": "PR041", "nombre": "Almendra Pelada Non Pareil Grande 1kg", "categoria": "Frutos Secos Individuales", "precio": 33900, "stock": 0}, {"id": "PR042", "nombre": "Almendra Pelada Non Pareil Grande 500g", "categoria": "Frutos Secos Individuales", "precio": 17500, "stock": 0}, {"id": "PR043", "nombre": "Almendra Pelada Non Pareil Grande 250g", "categoria": "Frutos Secos Individuales", "precio": 9200, "stock": 0}, {"id": "PR044", "nombre": "Almendra Pelada Non Pareil Grande 100g", "categoria": "Frutos Secos Individuales", "precio": 4100, "stock": 0}, {"id": "PR045", "nombre": "Nuez Pelada Mariposa Extra Light 1kg", "categoria": "Frutos Secos Individuales", "precio": 25700, "stock": 0}, {"id": "PR046", "nombre": "Nuez Pelada Mariposa Extra Light 500g", "categoria": "Frutos Secos Individuales", "precio": 13900, "stock": 0}, {"id": "PR047", "nombre": "Nuez Pelada Mariposa Extra Light 250g", "categoria": "Frutos Secos Individuales", "precio": 7200, "stock": 0}, {"id": "PR048", "nombre": "Nuez Pelada Mariposa Extra Light 100g", "categoria": "Frutos Secos Individuales", "precio": 3600, "stock": 0}, {"id": "PR049", "nombre": "Nuez de Pecan Partida 1kg", "categoria": "Frutos Secos Individuales", "precio": 38100, "stock": 0}, {"id": "PR050", "nombre": "Nuez de Pecan Partida 500g", "categoria": "Frutos Secos Individuales", "precio": 20000, "stock": 0}, {"id": "PR051", "nombre": "Nuez de Pecan Partida 250g", "categoria": "Frutos Secos Individuales", "precio": 10300, "stock": 0}, {"id": "PR052", "nombre": "Nuez de Pecan Partida 100g", "categoria": "Frutos Secos Individuales", "precio": 4300, "stock": 0}, {"id": "PR053", "nombre": "Pistacho pelado sin sal 1kg", "categoria": "Frutos Secos Individuales", "precio": 72100, "stock": 0}, {"id": "PR054", "nombre": "Pistacho pelado sin sal 500g", "categoria": "Frutos Secos Individuales", "precio": 38100, "stock": 0}, {"id": "PR055", "nombre": "Pistacho pelado sin sal 250g", "categoria": "Frutos Secos Individuales", "precio": 19500, "stock": 0}, {"id": "PR056", "nombre": "Pistacho pelado sin sal 100g", "categoria": "Frutos Secos Individuales", "precio": 8200, "stock": 0}, {"id": "PR057", "nombre": "Castaña de Cajú Natural 1kg", "categoria": "Frutos Secos Individuales", "precio": 28800, "stock": 0}, {"id": "PR058", "nombre": "Castaña de Cajú Natural 500g", "categoria": "Frutos Secos Individuales", "precio": 15400, "stock": 0}, {"id": "PR059", "nombre": "Castaña de Cajú Natural 250g", "categoria": "Frutos Secos Individuales", "precio": 8200, "stock": 0}, {"id": "PR060", "nombre": "Castaña de Cajú Natural 100g", "categoria": "Frutos Secos Individuales", "precio": 3600, "stock": 0}, {"id": "PR061", "nombre": "Castañas de caju tostadas 1kg", "categoria": "Frutos Secos Individuales", "precio": 29800, "stock": 0}, {"id": "PR062", "nombre": "Castañas de caju tostadas 500g", "categoria": "Frutos Secos Individuales", "precio": 15900, "stock": 0}, {"id": "PR063", "nombre": "Castañas de caju tostadas 250g", "categoria": "Frutos Secos Individuales", "precio": 8200, "stock": 0}, {"id": "PR064", "nombre": "Castañas de caju tostadas 100g", "categoria": "Frutos Secos Individuales", "precio": 3300, "stock": 0}, {"id": "PR065", "nombre": "Castañas de caju tostadas y saladas 1kg", "categoria": "Frutos Secos Individuales", "precio": 29800, "stock": 0}, {"id": "PR066", "nombre": "Castañas de caju tostadas y saladas 500g", "categoria": "Frutos Secos Individuales", "precio": 15900, "stock": 0}, {"id": "PR067", "nombre": "Castañas de caju tostadas y saladas 250g", "categoria": "Frutos Secos Individuales", "precio": 8200, "stock": 0}, {"id": "PR068", "nombre": "Castañas de caju tostadas y saladas 100g", "categoria": "Frutos Secos Individuales", "precio": 3300, "stock": 0}, {"id": "PR069", "nombre": "Maní Tostado Sin Sal Bolsa 1kg", "categoria": "Frutos Secos Individuales", "precio": 5100, "stock": 0}, {"id": "PR070", "nombre": "Maní Tostado Sin Sal Bolsa 500g", "categoria": "Frutos Secos Individuales", "precio": 2900, "stock": 0}, {"id": "PR071", "nombre": "Maní Tostado Sin Sal Bolsa 250g", "categoria": "Frutos Secos Individuales", "precio": 1800, "stock": 0}, {"id": "PR072", "nombre": "Maní Tostado Sin Sal Bolsa 100g", "categoria": "Frutos Secos Individuales", "precio": 1100, "stock": 0}, {"id": "PR073", "nombre": "Maní Japones 1kg", "categoria": "Frutos Secos Individuales", "precio": 5400, "stock": 0}, {"id": "PR074", "nombre": "Maní Japones 500g", "categoria": "Frutos Secos Individuales", "precio": 3000, "stock": 0}, {"id": "PR075", "nombre": "Maní Japones 250g", "categoria": "Frutos Secos Individuales", "precio": 1900, "stock": 0}, {"id": "PR076", "nombre": "Maní Japones 100g", "categoria": "Frutos Secos Individuales", "precio": 1200, "stock": 0}, {"id": "PR077", "nombre": "Maní Tostado con sal 1kg", "categoria": "Frutos Secos Individuales", "precio": 5100, "stock": 0}, {"id": "PR078", "nombre": "Maní Tostado con sal 500g", "categoria": "Frutos Secos Individuales", "precio": 2900, "stock": 0}, {"id": "PR079", "nombre": "Maní Tostado con sal 250g", "categoria": "Frutos Secos Individuales", "precio": 1800, "stock": 0}, {"id": "PR080", "nombre": "Maní Tostado con sal 100g", "categoria": "Frutos Secos Individuales", "precio": 1100, "stock": 0}, {"id": "PR081", "nombre": "Arándanos Rojos CHILE 1kg", "categoria": "Frutos Secos Individuales", "precio": 22600, "stock": 0}, {"id": "PR082", "nombre": "Arándanos Rojos CHILE 500g", "categoria": "Frutos Secos Individuales", "precio": 12300, "stock": 0}, {"id": "PR083", "nombre": "Arándanos Rojos CHILE 250g", "categoria": "Frutos Secos Individuales", "precio": 6600, "stock": 0}, {"id": "PR084", "nombre": "Arándanos Rojos CHILE 100g", "categoria": "Frutos Secos Individuales", "precio": 2900, "stock": 0}, {"id": "PR085", "nombre": "Pasas de uva negras Jumbo 1kg", "categoria": "Frutos Secos Individuales", "precio": 9200, "stock": 0}, {"id": "PR086", "nombre": "Pasas de uva negras Jumbo 500g", "categoria": "Frutos Secos Individuales", "precio": 5100, "stock": 0}, {"id": "PR087", "nombre": "Pasas de uva negras Jumbo 250g", "categoria": "Frutos Secos Individuales", "precio": 2900, "stock": 0}, {"id": "PR088", "nombre": "Pasas de uva negras Jumbo 100g", "categoria": "Frutos Secos Individuales", "precio": 1500, "stock": 0}, {"id": "PR089", "nombre": "Pasas de uva rubias 1kg", "categoria": "Frutos Secos Individuales", "precio": 11300, "stock": 0}, {"id": "PR090", "nombre": "Pasas de uva rubias 500g", "categoria": "Frutos Secos Individuales", "precio": 6300, "stock": 0}, {"id": "PR091", "nombre": "Pasas de uva rubias 250g", "categoria": "Frutos Secos Individuales", "precio": 3500, "stock": 0}, {"id": "PR092", "nombre": "Pasas de uva rubias 100g", "categoria": "Frutos Secos Individuales", "precio": 1700, "stock": 0}, {"id": "PR093", "nombre": "Chips de Banana 1kg", "categoria": "Frutos Secos Individuales", "precio": 15400, "stock": 0}, {"id": "PR094", "nombre": "Chips de Banana 500g", "categoria": "Frutos Secos Individuales", "precio": 8700, "stock": 0}, {"id": "PR095", "nombre": "Chips de Banana 250g", "categoria": "Frutos Secos Individuales", "precio": 4600, "stock": 0}, {"id": "PR096", "nombre": "Chips de Banana 100g", "categoria": "Frutos Secos Individuales", "precio": 2200, "stock": 0}, {"id": "PR099", "nombre": "Provenzal GOAT 100g", "categoria": "Especias y Semillas", "precio": 1300, "stock": 0}, {"id": "PR100", "nombre": "Aji molido GOAT 50g", "categoria": "Especias y Semillas", "precio": 1300, "stock": 0}, {"id": "PR101", "nombre": "Oregano Nacional 25g", "categoria": "Especias y Semillas", "precio": 800, "stock": 0}, {"id": "PR102", "nombre": "Semilla de Zapallo Pelada GOAT 100g", "categoria": "Especias y Semillas", "precio": 2600, "stock": 0}, {"id": "PR103", "nombre": "Semilla de Girasol Pelado 100g", "categoria": "Especias y Semillas", "precio": 1200, "stock": 0}, {"id": "PR104", "nombre": "Hongos Secos Boletus 100g", "categoria": "Especias y Semillas", "precio": 5300, "stock": 0}, {"id": "PR105", "nombre": "Tomates Secos 100g", "categoria": "Especias y Semillas", "precio": 3900, "stock": 0}, {"id": "PR106", "nombre": "Hongos Secos Boletus 50g", "categoria": "Especias y Semillas", "precio": 2800, "stock": 0}, {"id": "PR107", "nombre": "Tomates Secos 50g", "categoria": "Especias y Semillas", "precio": 2000, "stock": 0}, {"id": "PR108", "nombre": "Pimentón Ahumado GOAT 100g", "categoria": "Especias y Semillas", "precio": 1200, "stock": 0}, {"id": "PR109", "nombre": "Ajo Granulado Blanco 100g", "categoria": "Especias y Semillas", "precio": 1800, "stock": 0}, {"id": "PR110", "nombre": "Canela en Rama 30g", "categoria": "Especias y Semillas", "precio": 1600, "stock": 0}, {"id": "PR111", "nombre": "Semilla de girasol tostada salada 100g", "categoria": "Especias y Semillas", "precio": 1300, "stock": 0}, {"id": "PR112", "nombre": "Curry Suave Ahumado 100g", "categoria": "Especias y Semillas", "precio": 1200, "stock": 0}];
 
 const RECETAS_INICIALES = [{"idProducto": "PR001", "idInsumo": "INS001", "cantidad": 0.3}, {"idProducto": "PR001", "idInsumo": "INS003", "cantidad": 0.1}, {"idProducto": "PR001", "idInsumo": "INS004", "cantidad": 0.3}, {"idProducto": "PR001", "idInsumo": "INS005", "cantidad": 0.1}, {"idProducto": "PR001", "idInsumo": "INS016", "cantidad": 0.1}, {"idProducto": "PR001", "idInsumo": "INS017", "cantidad": 0.1}, {"idProducto": "PR001", "idInsumo": "INS035", "cantidad": 1.0}, {"idProducto": "PR001", "idInsumo": "INS037", "cantidad": 1.0}, {"idProducto": "PR002", "idInsumo": "INS001", "cantidad": 0.15}, {"idProducto": "PR002", "idInsumo": "INS003", "cantidad": 0.05}, {"idProducto": "PR002", "idInsumo": "INS004", "cantidad": 0.15}, {"idProducto": "PR002", "idInsumo": "INS005", "cantidad": 0.05}, {"idProducto": "PR002", "idInsumo": "INS016", "cantidad": 0.05}, {"idProducto": "PR002", "idInsumo": "INS017", "cantidad": 0.05}, {"idProducto": "PR002", "idInsumo": "INS035", "cantidad": 1.0}, {"idProducto": "PR002", "idInsumo": "INS038", "cantidad": 1.0}];
 
@@ -48,6 +48,7 @@ const Icon = ({ name, className = "w-5 h-5" }) => {
     recetas: "M4 3h16v18l-8-4-8 4V3z M8 8h8M8 12h5",
     ventas: "M3 3v18h18M7 15l4-4 3 3 5-6",
     pedidos: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12l2 2 4-4",
+    listaPrecios: "M4 4h11l5 8-5 8H4V4zM9 12h.01",
     pvp: "M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6",
     plus: "M12 5v14M5 12h14",
     trash: "M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14",
@@ -236,6 +237,7 @@ export default function GoatApp() {
     { id: "pedidos", label: "Pedidos", icon: "pedidos" },
     { id: "ventas", label: "Ventas", icon: "ventas" },
     { id: "pvp", label: "Calculadora PVP", icon: "pvp" },
+    { id: "precios", label: "Lista de Precios", icon: "listaPrecios" },
   ];
 
   return (
@@ -368,6 +370,7 @@ export default function GoatApp() {
           )}
           {tab === "ventas" && <Ventas ventas={ventas} />}
           {tab === "pvp" && <CalculadoraPVP productos={productos} recetas={recetas} costoProducto={costoProducto} />}
+          {tab === "precios" && <ListaPrecios productos={productos} setProductos={setProductos} />}
         </main>
       </div>
     </div>
@@ -634,8 +637,9 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
   const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState({});
   const [adding, setAdding] = useState(false);
-  const [newItem, setNewItem] = useState({ id: "", nombre: "", precio: 0, stock: 0 });
+  const [newItem, setNewItem] = useState({ id: "", nombre: "", categoria: "", precio: 0, stock: 0 });
 
+  const categorias = useMemo(() => [...new Set(productos.map((p) => p.categoria).filter(Boolean))].sort(), [productos]);
   const filtered = productos.filter((p) => p.nombre.toLowerCase().includes(q.toLowerCase()) || p.id.toLowerCase().includes(q.toLowerCase()));
   const tieneReceta = (id) => recetas.some((r) => r.idProducto === id);
 
@@ -646,7 +650,7 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
     if (!newItem.nombre.trim()) return;
     const id = newItem.id.trim() || uid("PR");
     setProductos((prev) => [...prev, { ...newItem, id, precio: Number(newItem.precio), stock: Number(newItem.stock) }]);
-    setNewItem({ id: "", nombre: "", precio: 0, stock: 0 });
+    setNewItem({ id: "", nombre: "", categoria: "", precio: 0, stock: 0 });
     setAdding(false);
   };
 
@@ -667,6 +671,7 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
                   return {
                     ID: p.id,
                     Nombre: p.nombre,
+                    Categoría: p.categoria || "",
                     "Costo (receta)": costo != null ? Number(costo.toFixed(2)) : "",
                     "Precio de venta": p.precio,
                     "Margen %": margen != null ? Number(margen.toFixed(1)) : "",
@@ -685,23 +690,30 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar producto por nombre o ID…" className="w-full max-w-md mb-4 px-4 py-2 rounded-lg border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-600" />
 
       {adding && (
-        <div className="bg-white border border-amber-300 rounded-xl p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
+        <div className="bg-white border border-amber-300 rounded-xl p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
           <Field label="ID (opcional)"><input value={newItem.id} onChange={(e) => setNewItem({ ...newItem, id: e.target.value })} className="input" /></Field>
           <Field label="Nombre"><input value={newItem.nombre} onChange={(e) => setNewItem({ ...newItem, nombre: e.target.value })} className="input" /></Field>
+          <Field label="Categoría">
+            <input value={newItem.categoria} onChange={(e) => setNewItem({ ...newItem, categoria: e.target.value })} className="input" list="lista-categorias" placeholder="Ej: Mixes Especiales" />
+          </Field>
           <Field label="Precio de venta"><input type="number" value={newItem.precio} onChange={(e) => setNewItem({ ...newItem, precio: e.target.value })} className="input" /></Field>
           <Field label="Stock (bolsas)"><input type="number" value={newItem.stock} onChange={(e) => setNewItem({ ...newItem, stock: e.target.value })} className="input" /></Field>
-          <div className="col-span-2 md:col-span-4 flex gap-2 justify-end">
+          <div className="col-span-2 md:col-span-5 flex gap-2 justify-end">
             <button onClick={() => setAdding(false)} className="px-3 py-1.5 text-sm rounded-lg text-stone-500 hover:bg-stone-100">Cancelar</button>
             <button onClick={addNew} className="px-3 py-1.5 text-sm rounded-lg bg-amber-700 text-white">Guardar</button>
           </div>
         </div>
       )}
+      <datalist id="lista-categorias">
+        {categorias.map((c) => <option key={c} value={c} />)}
+      </datalist>
 
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
             <tr>
               <th className="text-left px-4 py-3">Producto</th>
+              <th className="text-left px-4 py-3">Categoría</th>
               <th className="text-right px-4 py-3">Costo (receta)</th>
               <th className="text-right px-4 py-3">Precio venta</th>
               <th className="text-right px-4 py-3">Margen</th>
@@ -716,6 +728,7 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
               return editing === p.id ? (
                 <tr key={p.id} className="bg-amber-50">
                   <td className="px-4 py-2"><input value={draft.nombre} onChange={(e) => setDraft({ ...draft, nombre: e.target.value })} className="input" /></td>
+                  <td className="px-4 py-2"><input value={draft.categoria || ""} onChange={(e) => setDraft({ ...draft, categoria: e.target.value })} className="input" list="lista-categorias" /></td>
                   <td className="px-4 py-2 text-right text-stone-400">{costo != null ? fmt(costo) : "—"}</td>
                   <td className="px-4 py-2"><input type="number" value={draft.precio} onChange={(e) => setDraft({ ...draft, precio: e.target.value })} className="input text-right" /></td>
                   <td className="px-4 py-2 text-right text-stone-400">—</td>
@@ -728,6 +741,7 @@ function Productos({ productos, setProductos, costoProducto, recetas }) {
                     <div className="font-medium text-stone-800">{p.nombre}</div>
                     <div className="text-xs text-stone-400 font-mono-num">{p.id}</div>
                   </td>
+                  <td className="px-4 py-3 text-stone-600">{p.categoria || <span className="text-stone-300">—</span>}</td>
                   <td className="px-4 py-3 text-right font-mono-num text-stone-500">{costo != null ? fmt(costo) : "—"}</td>
                   <td className="px-4 py-3 text-right font-mono-num">{fmt(p.precio)}</td>
                   <td className="px-4 py-3 text-right font-mono-num">
@@ -1116,12 +1130,17 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
 }
 
 /* ============ COMPROBANTE IMPRIMIBLE POR CLIENTE ============ */
+// Monta su contenido directo en <body>, fuera de #root, para que las reglas
+// de impresión puedan ocultar el resto de la app y mostrar solo esto.
+function ImprimirPortal({ children }) {
+  return createPortal(<div id="zona-imprimible">{children}</div>, document.body);
+}
+
 function ContenidoComprobante({ grupo, filas, total, fechaHoy }) {
   return (
     <div className="p-6">
       <div className="text-center mb-4">
-        <div className="font-display text-2xl text-amber-700">GOAT</div>
-        <div className="text-xs text-stone-500 uppercase tracking-wide">Frutos Secos Premium</div>
+        <img src="/logo.png" alt="Familia GOAT" className="mx-auto" style={{ width: 110, height: "auto" }} />
       </div>
       <div className="text-sm mb-4">
         <div><span className="text-stone-500">Cliente:</span> <strong>{grupo.cliente}</strong></div>
@@ -1185,12 +1204,9 @@ function ComprobanteCliente({ grupo, productos, onClose }) {
       </div>
 
       {/* Copia del contenido, montada directo en <body> (fuera de #root) solo para imprimir */}
-      {createPortal(
-        <div id="comprobante-imprimible">
-          <ContenidoComprobante grupo={grupo} filas={filas} total={total} fechaHoy={fechaHoy} />
-        </div>,
-        document.body
-      )}
+      <ImprimirPortal>
+        <ContenidoComprobante grupo={grupo} filas={filas} total={total} fechaHoy={fechaHoy} />
+      </ImprimirPortal>
     </>
   );
 }
@@ -1258,6 +1274,141 @@ function Ventas({ ventas }) {
 }
 
 /* ============ COMPONENTES: CALCULADORA PVP ============ */
+/* ============ LISTA DE PRECIOS AL PÚBLICO ============ */
+
+// Separa "Mix GOAT Clásico 1kg" en { base: "Mix GOAT Clásico", gramos: 1000 }.
+// Si el nombre no termina en un peso reconocible, gramos queda null.
+function extraerPesoNombre(nombre) {
+  const m = nombre.trim().match(/^(.*?)\s+(\d+(?:[.,]\d+)?)\s*(kgs?|g)\.?$/i);
+  if (!m) return { base: nombre.trim(), gramos: null };
+  const cantidad = parseFloat(m[2].replace(",", "."));
+  const esKg = m[3].toLowerCase().startsWith("kg");
+  return { base: m[1].trim(), gramos: Math.round(esKg ? cantidad * 1000 : cantidad) };
+}
+
+function ListaPrecios({ productos, setProductos }) {
+  const [fecha, setFecha] = useState(todayISO());
+
+  const grupos = useMemo(() => {
+    const porCategoria = {};
+    productos
+      .filter((p) => p.precio > 0)
+      .forEach((p) => {
+        const categoria = p.categoria?.trim() || "Sin categoría";
+        const { base, gramos } = extraerPesoNombre(p.nombre);
+        if (!porCategoria[categoria]) porCategoria[categoria] = {};
+        if (!porCategoria[categoria][base]) porCategoria[categoria][base] = {};
+        porCategoria[categoria][base][gramos ?? "unico"] = p.precio;
+      });
+
+    return Object.entries(porCategoria)
+      .map(([categoria, productosBase]) => {
+        const pesosSet = new Set();
+        Object.values(productosBase).forEach((precios) => {
+          Object.keys(precios).forEach((k) => { if (k !== "unico") pesosSet.add(Number(k)); });
+        });
+        const pesos = [...pesosSet].sort((a, b) => b - a);
+        const filas = Object.entries(productosBase)
+          .map(([nombre, precios]) => ({ nombre, precios }))
+          .sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+        const tieneUnico = filas.some((f) => f.precios.unico != null);
+        return { categoria, pesos, filas, tieneUnico };
+      })
+      .sort((a, b) => a.categoria.localeCompare(b.categoria, "es"));
+  }, [productos]);
+
+  const fechaFormateada = useMemo(() => {
+    const [y, m, d] = fecha.split("-");
+    return `${d}/${m}/${y}`;
+  }, [fecha]);
+
+  const exportar = () => {
+    const sheets = {};
+    grupos.forEach((g) => {
+      sheets[g.categoria.slice(0, 31)] = g.filas.map((f) => {
+        const fila = { Producto: f.nombre };
+        g.pesos.forEach((p) => { fila[`${p}g`] = f.precios[p] != null ? f.precios[p] : ""; });
+        if (g.tieneUnico) fila["Precio"] = f.precios.unico != null ? f.precios.unico : "";
+        return fila;
+      });
+    });
+    exportarExcel("goat-lista-precios", sheets);
+  };
+
+  return (
+    <div>
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl font-semibold text-stone-900">Lista de Precios</h1>
+          <p className="text-stone-500 mt-1">Agrupada por categoría, lista para compartir con clientes o imprimir.</p>
+        </div>
+        <div className="flex flex-wrap gap-2 items-end">
+          <Field label="Actualizada al">
+            <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="input" />
+          </Field>
+          <BotonExportar onClick={exportar} />
+          <button onClick={() => window.print()} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
+            <Icon name="download" className="w-4 h-4" /> Imprimir
+          </button>
+        </div>
+      </header>
+
+      {grupos.length === 0 ? (
+        <p className="text-sm text-stone-400">No hay productos con precio cargado todavía.</p>
+      ) : (
+        <div className="bg-white rounded-2xl border border-stone-200 overflow-x-auto">
+          <ContenidoListaPrecios grupos={grupos} fechaFormateada={fechaFormateada} />
+        </div>
+      )}
+
+      <ImprimirPortal>
+        <ContenidoListaPrecios grupos={grupos} fechaFormateada={fechaFormateada} />
+      </ImprimirPortal>
+      <StyleHelper />
+    </div>
+  );
+}
+
+function ContenidoListaPrecios({ grupos, fechaFormateada }) {
+  return (
+    <div className="p-6">
+      <div className="text-center mb-6">
+        <img src="/logo.png" alt="Familia GOAT" className="mx-auto mb-2" style={{ width: 130, height: "auto" }} />
+        <div className="text-xs text-stone-400 mt-1">Lista de Precios — Actualizada al {fechaFormateada}</div>
+      </div>
+      {grupos.map((g) => (
+        <div key={g.categoria} className="mb-6">
+          <h3 className="font-semibold text-stone-800 uppercase text-xs tracking-wide mb-2 border-b-2 border-stone-800 pb-1">{g.categoria}</h3>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-stone-300">
+                <th className="text-left py-1.5">Producto</th>
+                {g.pesos.map((p) => <th key={p} className="text-right py-1.5 whitespace-nowrap">{p}g</th>)}
+                {g.tieneUnico && <th className="text-right py-1.5">Precio</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {g.filas.map((f) => (
+                <tr key={f.nombre} className="border-b border-stone-100">
+                  <td className="py-1.5">{f.nombre}</td>
+                  {g.pesos.map((p) => (
+                    <td key={p} className="text-right font-mono-num py-1.5 whitespace-nowrap">
+                      {f.precios[p] != null ? fmt(f.precios[p]) : "—"}
+                    </td>
+                  ))}
+                  {g.tieneUnico && (
+                    <td className="text-right font-mono-num py-1.5">{f.precios.unico != null ? fmt(f.precios.unico) : "—"}</td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function CalculadoraPVP({ productos, recetas, costoProducto }) {
   const [idProducto, setIdProducto] = useState(productos[0]?.id || "");
   const [margen, setMargen] = useState(30);
