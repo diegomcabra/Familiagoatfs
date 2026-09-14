@@ -17,5 +17,11 @@
 
 @media print {
   #root { display: none !important; }
-  #zona-imprimible { display: block !important; }
+  #zona-imprimible {
+    display: block !important;
+    width: 100%;
+    font-size: 11px;
+  }
+  #zona-imprimible table { font-size: 11px; }
+  #zona-imprimible h3 { break-after: avoid; }
 }

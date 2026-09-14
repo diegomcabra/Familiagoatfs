@@ -39,6 +39,126 @@ function BotonExportar({ onClick, label = "Exportar" }) {
   );
 }
 
+// Tamaño físico de la etiqueta Niimbot B1 del usuario: 50 x 80 mm.
+// A ~203dpi (resolución típica de estas impresoras térmicas), 1mm ≈ 8px.
+const ETIQUETA_MM = { ancho: 50, alto: 80 };
+const ETIQUETA_PX_POR_MM = 8;
+
+// Genera una imagen PNG con el resumen de un cliente (todos sus pedidos + total),
+// del tamaño exacto de la etiqueta, y dispara la descarga. Esa imagen se importa
+// después en la app Niimbot para imprimirla por Bluetooth (un navegador no puede
+// mandarle la impresión directamente a la Niimbot).
+async function generarEtiquetaCliente(grupo, productos) {
+  const filas = grupo.items.map((p) => {
+    const precio = productos.find((prod) => prod.id === p.idProducto)?.precio || 0;
+    return { ...p, precioUnitario: precio, subtotal: precio * p.cantidad };
+  });
+  const total = filas.reduce((s, f) => s + f.subtotal, 0);
+  const fechaHoy = new Date().toLocaleDateString("es-AR");
+
+  const w = ETIQUETA_MM.ancho * ETIQUETA_PX_POR_MM;
+  const h = ETIQUETA_MM.alto * ETIQUETA_PX_POR_MM;
+  const margen = 16;
+  const anchoUtil = w - margen * 2;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = "#000000";
+  ctx.textBaseline = "top";
+
+  let y = margen;
+
+  // Logo (si no carga por algún motivo, seguimos sin él)
+  const logo = await new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = "/logo.png";
+  });
+  if (logo) {
+    const logoW = Math.min(110, anchoUtil);
+    const logoH = (logo.height / logo.width) * logoW;
+    ctx.drawImage(logo, (w - logoW) / 2, y, logoW, logoH);
+    y += logoH + 8;
+  }
+
+  ctx.textAlign = "center";
+  ctx.font = "bold 18px sans-serif";
+  ctx.fillText(grupo.cliente, w / 2, y);
+  y += 24;
+
+  ctx.font = "13px sans-serif";
+  ctx.fillStyle = "#555555";
+  ctx.fillText(fechaHoy, w / 2, y);
+  ctx.fillStyle = "#000000";
+  y += 22;
+
+  ctx.strokeStyle = "#000000";
+  ctx.beginPath();
+  ctx.moveTo(margen, y);
+  ctx.lineTo(w - margen, y);
+  ctx.stroke();
+  y += 12;
+
+  ctx.textAlign = "left";
+
+  function ajustarTexto(texto, maxWidth, font) {
+    ctx.font = font;
+    const palabras = texto.split(" ");
+    const lineas = [];
+    let actual = "";
+    palabras.forEach((palabra) => {
+      const prueba = actual ? actual + " " + palabra : palabra;
+      if (ctx.measureText(prueba).width > maxWidth && actual) {
+        lineas.push(actual);
+        actual = palabra;
+      } else {
+        actual = prueba;
+      }
+    });
+    if (actual) lineas.push(actual);
+    return lineas;
+  }
+
+  filas.forEach((f) => {
+    const fontProducto = "13px sans-serif";
+    const lineas = ajustarTexto(`${f.cantidad}x ${f.nombreProducto}`, anchoUtil, fontProducto);
+    ctx.font = fontProducto;
+    lineas.forEach((linea) => {
+      ctx.fillText(linea, margen, y);
+      y += 16;
+    });
+    ctx.font = "12px sans-serif";
+    ctx.fillStyle = "#444444";
+    ctx.textAlign = "right";
+    ctx.fillText(fmt(f.subtotal), w - margen, y);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "#000000";
+    y += 20;
+  });
+
+  y += 4;
+  ctx.beginPath();
+  ctx.moveTo(margen, y);
+  ctx.lineTo(w - margen, y);
+  ctx.stroke();
+  y += 14;
+
+  ctx.textAlign = "right";
+  ctx.font = "bold 20px sans-serif";
+  ctx.fillText(`Total: ${fmt(total)}`, w - margen, y);
+
+  const dataUrl = canvas.toDataURL("image/png");
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = `etiqueta-${grupo.cliente.replace(/\s+/g, "_")}-${todayISO()}.png`;
+  a.click();
+}
+
 /* ============ ICONOS (línea simple) ============ */
 const Icon = ({ name, className = "w-5 h-5" }) => {
   const paths = {
@@ -898,6 +1018,7 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
   const [fecha, setFecha] = useState(todayISO());
   const [verEntregados, setVerEntregados] = useState(false);
   const [clienteAImprimir, setClienteAImprimir] = useState(null);
+  const [clienteTicket58, setClienteTicket58] = useState(null);
 
   const producto = productos.find((p) => p.id === idProducto);
   const pendientes = pedidos.filter((p) => p.estado === "Pendiente");
@@ -1029,7 +1150,7 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
               <th className="text-left px-4 py-3">Cliente</th>
               <th className="text-right px-4 py-3">Ítems</th>
               <th className="text-right px-4 py-3">Total</th>
-              <th className="px-4 py-3 w-40"></th>
+              <th className="px-4 py-3 w-96"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
@@ -1041,9 +1162,23 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
                 <td className="px-4 py-3 font-medium">{g.cliente}</td>
                 <td className="px-4 py-3 text-right font-mono-num">{g.items.length}</td>
                 <td className="px-4 py-3 text-right font-mono-num">{fmt(g.totalCliente)}</td>
-                <td className="px-4 py-3 text-right">
-                  <button onClick={() => setClienteAImprimir(g)} className="inline-flex items-center gap-1 border border-stone-300 hover:bg-stone-100 text-stone-700 px-3 py-1.5 rounded-lg text-xs font-medium">
+                <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <button onClick={() => setClienteAImprimir(g)} className="inline-flex items-center gap-1 border border-stone-300 hover:bg-stone-100 text-stone-700 px-3 py-1.5 rounded-lg text-xs font-medium mr-2">
                     <Icon name="download" className="w-3.5 h-3.5" /> Comprobante
+                  </button>
+                  <button
+                    onClick={() => generarEtiquetaCliente(g, productos)}
+                    title="Descarga una imagen de 50x80mm para importar en la app Niimbot e imprimir por Bluetooth"
+                    className="inline-flex items-center gap-1 border border-stone-300 hover:bg-stone-100 text-stone-700 px-3 py-1.5 rounded-lg text-xs font-medium mr-2"
+                  >
+                    <Icon name="download" className="w-3.5 h-3.5" /> Etiqueta
+                  </button>
+                  <button
+                    onClick={() => setClienteTicket58(g)}
+                    title="Ticket angosto para impresoras térmicas de 58mm (ej. X-Printer XP-58IIH)"
+                    className="inline-flex items-center gap-1 border border-stone-300 hover:bg-stone-100 text-stone-700 px-3 py-1.5 rounded-lg text-xs font-medium"
+                  >
+                    <Icon name="download" className="w-3.5 h-3.5" /> Ticket 58mm
                   </button>
                 </td>
               </tr>
@@ -1124,6 +1259,10 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
         <ComprobanteCliente grupo={clienteAImprimir} productos={productos} onClose={() => setClienteAImprimir(null)} />
       )}
 
+      {clienteTicket58 && (
+        <ReciboTermico58 grupo={clienteTicket58} productos={productos} onClose={() => setClienteTicket58(null)} />
+      )}
+
       <StyleHelper />
     </div>
   );
@@ -1136,6 +1275,31 @@ function ImprimirPortal({ children }) {
   return createPortal(<div id="zona-imprimible">{children}</div>, document.body);
 }
 
+// Antes de cada impresión fijamos el tamaño de página que corresponda
+// (hoja A4 para comprobantes/listas, o el ancho angosto de una térmica de tickets).
+// Cada botón "Imprimir" llama a esto con la regla que necesita, así conviven
+// distintos formatos en la misma app sin pisarse.
+function fijarPaginaImpresion(reglaCss) {
+  let style = document.getElementById("estilo-pagina-impresion");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "estilo-pagina-impresion";
+    document.head.appendChild(style);
+  }
+  style.textContent = `@media print { @page { ${reglaCss} } }`;
+}
+const PAGINA_A4 = "size: A4; margin: 14mm;";
+const PAGINA_TICKET_58MM = "size: 58mm auto; margin: 2mm;";
+
+function imprimirComoA4() {
+  fijarPaginaImpresion(PAGINA_A4);
+  window.print();
+}
+function imprimirComoTicket58() {
+  fijarPaginaImpresion(PAGINA_TICKET_58MM);
+  window.print();
+}
+
 function ContenidoComprobante({ grupo, filas, total, fechaHoy }) {
   return (
     <div className="p-6">
@@ -1146,22 +1310,28 @@ function ContenidoComprobante({ grupo, filas, total, fechaHoy }) {
         <div><span className="text-stone-500">Cliente:</span> <strong>{grupo.cliente}</strong></div>
         <div><span className="text-stone-500">Fecha:</span> {fechaHoy}</div>
       </div>
-      <table className="w-full text-sm mb-4">
+      <table className="w-full text-sm mb-4" style={{ tableLayout: "fixed", borderCollapse: "collapse" }}>
+        <colgroup>
+          <col style={{ width: "46%" }} />
+          <col style={{ width: "14%" }} />
+          <col style={{ width: "20%" }} />
+          <col style={{ width: "20%" }} />
+        </colgroup>
         <thead>
           <tr className="border-b border-stone-300">
-            <th className="text-left py-1.5">Producto</th>
-            <th className="text-right py-1.5">Cant.</th>
-            <th className="text-right py-1.5">P. unit.</th>
-            <th className="text-right py-1.5">Subtotal</th>
+            <th className="text-left py-1.5 pr-2">Producto</th>
+            <th className="text-right py-1.5 px-1">Cant.</th>
+            <th className="text-right py-1.5 px-1">P. unit.</th>
+            <th className="text-right py-1.5 px-1">Subtotal</th>
           </tr>
         </thead>
         <tbody>
           {filas.map((f) => (
             <tr key={f.id} className="border-b border-stone-100">
-              <td className="py-1.5">{f.nombreProducto}</td>
-              <td className="py-1.5 text-right font-mono-num">{f.cantidad}</td>
-              <td className="py-1.5 text-right font-mono-num">{fmt(f.precioUnitario)}</td>
-              <td className="py-1.5 text-right font-mono-num">{fmt(f.subtotal)}</td>
+              <td className="py-1.5 pr-2" style={{ wordBreak: "break-word" }}>{f.nombreProducto}</td>
+              <td className="py-1.5 px-1 text-right font-mono-num" style={{ whiteSpace: "nowrap" }}>{f.cantidad}</td>
+              <td className="py-1.5 px-1 text-right font-mono-num" style={{ whiteSpace: "nowrap" }}>{fmt(f.precioUnitario)}</td>
+              <td className="py-1.5 px-1 text-right font-mono-num" style={{ whiteSpace: "nowrap" }}>{fmt(f.subtotal)}</td>
             </tr>
           ))}
         </tbody>
@@ -1193,7 +1363,7 @@ function ComprobanteCliente({ grupo, productos, onClose }) {
           <div className="flex items-center justify-between px-5 py-3 border-b border-stone-200 sticky top-0 bg-white">
             <h3 className="font-display text-xl">Comprobante — {grupo.cliente}</h3>
             <div className="flex gap-2">
-              <button onClick={() => window.print()} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+              <button onClick={imprimirComoA4} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
                 <Icon name="download" className="w-4 h-4" /> Imprimir
               </button>
               <button onClick={onClose} className="px-3 py-1.5 rounded-lg text-sm text-stone-500 hover:bg-stone-100">Cerrar</button>
@@ -1206,6 +1376,71 @@ function ComprobanteCliente({ grupo, productos, onClose }) {
       {/* Copia del contenido, montada directo en <body> (fuera de #root) solo para imprimir */}
       <ImprimirPortal>
         <ContenidoComprobante grupo={grupo} filas={filas} total={total} fechaHoy={fechaHoy} />
+      </ImprimirPortal>
+    </>
+  );
+}
+
+/* ============ TICKET TÉRMICO 58mm (X-Printer XP-58IIH y similares) ============ */
+function ContenidoReciboTermico58({ grupo, filas, total, fechaHoy }) {
+  const linea = { borderTop: "1px dashed #000", margin: "6px 0" };
+  return (
+    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", padding: "6px 4px", width: "100%", color: "#000" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontWeight: "bold", fontSize: "13px" }}>FAMILIA GOAT</div>
+        <div style={{ fontSize: "10px" }}>Frutos Secos Premium</div>
+      </div>
+      <div style={linea} />
+      <div>Cliente: {grupo.cliente}</div>
+      <div>Fecha: {fechaHoy}</div>
+      <div style={linea} />
+      {filas.map((f) => (
+        <div key={f.id} style={{ marginBottom: 4 }}>
+          <div>{f.cantidad}x {f.nombreProducto}</div>
+          <div style={{ textAlign: "right" }}>{fmt(f.subtotal)}</div>
+        </div>
+      ))}
+      <div style={linea} />
+      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "13px" }}>
+        <span>TOTAL</span><span>{fmt(total)}</span>
+      </div>
+      <div style={{ textAlign: "center", marginTop: 10, fontSize: "10px" }}>¡Gracias por tu compra!</div>
+    </div>
+  );
+}
+
+function ReciboTermico58({ grupo, productos, onClose }) {
+  const filas = grupo.items.map((p) => {
+    const precio = productos.find((prod) => prod.id === p.idProducto)?.precio || 0;
+    return { ...p, precioUnitario: precio, subtotal: precio * p.cantidad };
+  });
+  const total = filas.reduce((s, f) => s + f.subtotal, 0);
+  const fechaHoy = new Date().toLocaleDateString("es-AR");
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 bg-stone-900/60 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl w-full max-w-xs max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 sticky top-0 bg-white">
+            <h3 className="font-display text-base">Ticket 58mm</h3>
+            <div className="flex gap-2">
+              <button onClick={imprimirComoTicket58} className="flex items-center gap-1 bg-amber-700 hover:bg-amber-800 text-white px-2.5 py-1.5 rounded-lg text-xs font-medium">
+                <Icon name="download" className="w-3.5 h-3.5" /> Imprimir
+              </button>
+              <button onClick={onClose} className="px-2.5 py-1.5 rounded-lg text-xs text-stone-500 hover:bg-stone-100">Cerrar</button>
+            </div>
+          </div>
+          <div className="p-3 bg-stone-100">
+            {/* Vista previa a un ancho aproximado al de un ticket real de 58mm */}
+            <div className="bg-white mx-auto shadow-sm" style={{ width: 220 }}>
+              <ContenidoReciboTermico58 grupo={grupo} filas={filas} total={total} fechaHoy={fechaHoy} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ImprimirPortal>
+        <ContenidoReciboTermico58 grupo={grupo} filas={filas} total={total} fechaHoy={fechaHoy} />
       </ImprimirPortal>
     </>
   );
@@ -1347,7 +1582,7 @@ function ListaPrecios({ productos, setProductos }) {
             <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="input" />
           </Field>
           <BotonExportar onClick={exportar} />
-          <button onClick={() => window.print()} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
+          <button onClick={imprimirComoA4} className="flex items-center gap-2 bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
             <Icon name="download" className="w-4 h-4" /> Imprimir
           </button>
         </div>
@@ -1376,35 +1611,47 @@ function ContenidoListaPrecios({ grupos, fechaFormateada }) {
         <img src="/logo.png" alt="Familia GOAT" className="mx-auto mb-2" style={{ width: 130, height: "auto" }} />
         <div className="text-xs text-stone-400 mt-1">Lista de Precios — Actualizada al {fechaFormateada}</div>
       </div>
-      {grupos.map((g) => (
-        <div key={g.categoria} className="mb-6">
-          <h3 className="font-semibold text-stone-800 uppercase text-xs tracking-wide mb-2 border-b-2 border-stone-800 pb-1">{g.categoria}</h3>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-stone-300">
-                <th className="text-left py-1.5">Producto</th>
-                {g.pesos.map((p) => <th key={p} className="text-right py-1.5 whitespace-nowrap">{p}g</th>)}
-                {g.tieneUnico && <th className="text-right py-1.5">Precio</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {g.filas.map((f) => (
-                <tr key={f.nombre} className="border-b border-stone-100">
-                  <td className="py-1.5">{f.nombre}</td>
-                  {g.pesos.map((p) => (
-                    <td key={p} className="text-right font-mono-num py-1.5 whitespace-nowrap">
-                      {f.precios[p] != null ? fmt(f.precios[p]) : "—"}
-                    </td>
-                  ))}
-                  {g.tieneUnico && (
-                    <td className="text-right font-mono-num py-1.5">{f.precios.unico != null ? fmt(f.precios.unico) : "—"}</td>
-                  )}
+      {grupos.map((g) => {
+        const numColsPrecio = g.pesos.length + (g.tieneUnico ? 1 : 0);
+        const anchoProducto = 40; // %
+        const anchoPrecio = (100 - anchoProducto) / Math.max(numColsPrecio, 1);
+        return (
+          <div key={g.categoria} className="mb-6" style={{ breakInside: "avoid" }}>
+            <h3 className="font-semibold text-stone-800 uppercase text-xs tracking-wide mb-2 border-b-2 border-stone-800 pb-1">{g.categoria}</h3>
+            <table className="w-full text-sm" style={{ tableLayout: "fixed", borderCollapse: "collapse" }}>
+              <colgroup>
+                <col style={{ width: `${anchoProducto}%` }} />
+                {g.pesos.map((p) => <col key={p} style={{ width: `${anchoPrecio}%` }} />)}
+                {g.tieneUnico && <col style={{ width: `${anchoPrecio}%` }} />}
+              </colgroup>
+              <thead>
+                <tr className="border-b border-stone-300">
+                  <th className="text-left py-1.5 pr-2">Producto</th>
+                  {g.pesos.map((p) => <th key={p} className="text-right py-1.5 px-1">{p}g</th>)}
+                  {g.tieneUnico && <th className="text-right py-1.5 px-1">Precio</th>}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
+              </thead>
+              <tbody>
+                {g.filas.map((f) => (
+                  <tr key={f.nombre} className="border-b border-stone-100">
+                    <td className="py-1.5 pr-2" style={{ wordBreak: "break-word" }}>{f.nombre}</td>
+                    {g.pesos.map((p) => (
+                      <td key={p} className="text-right font-mono-num py-1.5 px-1" style={{ whiteSpace: "nowrap" }}>
+                        {f.precios[p] != null ? fmt(f.precios[p]) : "—"}
+                      </td>
+                    ))}
+                    {g.tieneUnico && (
+                      <td className="text-right font-mono-num py-1.5 px-1" style={{ whiteSpace: "nowrap" }}>
+                        {f.precios.unico != null ? fmt(f.precios.unico) : "—"}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
     </div>
   );
 }
