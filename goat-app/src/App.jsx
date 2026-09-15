@@ -17,6 +17,24 @@ const fmtNum = (n, d = 2) => new Intl.NumberFormat("es-AR", { maximumFractionDig
 const uid = (p) => p + Math.random().toString(36).slice(2, 8).toUpperCase();
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
+// Agrupamiento de fechas por día / semana (arranca el lunes) / mes, para reportes.
+function claveDelPeriodo(fechaStr, granularidad) {
+  if (granularidad === "mes") return fechaStr.slice(0, 7); // YYYY-MM
+  if (granularidad === "dia") return fechaStr;
+  const d = new Date(fechaStr + "T00:00:00");
+  const diaSemana = d.getDay(); // 0 = domingo
+  const offsetALunes = diaSemana === 0 ? -6 : 1 - diaSemana;
+  d.setDate(d.getDate() + offsetALunes);
+  return d.toISOString().slice(0, 10);
+}
+const MESES_CORTOS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+function etiquetaPeriodo(clave, granularidad) {
+  const [y, m, d] = clave.split("-");
+  if (granularidad === "mes") return `${MESES_CORTOS[parseInt(m, 10) - 1]} ${y}`;
+  if (granularidad === "semana") return `Semana del ${d}/${m}/${y}`;
+  return `${d}/${m}/${y}`;
+}
+
 // Exporta una o varias listas a un archivo .xlsx.
 // sheets: { "Nombre de hoja": [ {col1: valor, col2: valor}, ... ], ... }
 function exportarExcel(nombreArchivo, sheets) {
@@ -1040,6 +1058,61 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
     });
   }, [pendientes, productos]);
 
+  // Reporte por fecha: no afecta las listas operativas de arriba (esas siempre
+  // muestran todo lo pendiente), es una vista aparte para consultar el histórico.
+  const [desdeReporte, setDesdeReporte] = useState("");
+  const [hastaReporte, setHastaReporte] = useState("");
+  const [granularidadReporte, setGranularidadReporte] = useState("dia");
+
+  const pedidosFiltradosReporte = useMemo(
+    () => pedidos.filter((p) => (!desdeReporte || p.fecha >= desdeReporte) && (!hastaReporte || p.fecha <= hastaReporte)),
+    [pedidos, desdeReporte, hastaReporte]
+  );
+
+  const resumenReporte = useMemo(() => {
+    const grupos = {};
+    pedidosFiltradosReporte.forEach((p) => {
+      const clave = claveDelPeriodo(p.fecha, granularidadReporte);
+      if (!grupos[clave]) grupos[clave] = { clave, pedidos: 0, entregados: 0, pendientes: 0, totalEstimado: 0 };
+      grupos[clave].pedidos += 1;
+      if (p.estado === "Entregado") grupos[clave].entregados += 1;
+      else grupos[clave].pendientes += 1;
+      const precio = productos.find((prod) => prod.id === p.idProducto)?.precio || 0;
+      grupos[clave].totalEstimado += precio * p.cantidad;
+    });
+    return Object.values(grupos).sort((a, b) => b.clave.localeCompare(a.clave));
+  }, [pedidosFiltradosReporte, granularidadReporte, productos]);
+
+  const totalesReporte = useMemo(
+    () => ({
+      pedidos: pedidosFiltradosReporte.length,
+      entregados: pedidosFiltradosReporte.filter((p) => p.estado === "Entregado").length,
+      pendientes: pedidosFiltradosReporte.filter((p) => p.estado === "Pendiente").length,
+      totalEstimado: pedidosFiltradosReporte.reduce((s, p) => s + (productos.find((pr) => pr.id === p.idProducto)?.precio || 0) * p.cantidad, 0),
+    }),
+    [pedidosFiltradosReporte, productos]
+  );
+
+  const exportarReporte = () => {
+    exportarExcel("goat-reporte-pedidos", {
+      Resumen: resumenReporte.map((r) => ({
+        Período: etiquetaPeriodo(r.clave, granularidadReporte),
+        Pedidos: r.pedidos,
+        Entregados: r.entregados,
+        Pendientes: r.pendientes,
+        "Total estimado": Number(r.totalEstimado.toFixed(2)),
+      })),
+      Detalle: pedidosFiltradosReporte.map((p) => ({
+        Fecha: p.fecha,
+        Producto: p.nombreProducto,
+        Cliente: p.cliente,
+        Cantidad: p.cantidad,
+        Estado: p.estado,
+        "Fecha entrega": p.fechaEntrega || "",
+      })),
+    });
+  };
+
   const crearPedido = () => {
     if (!producto || cantidad <= 0) return;
     setPedidos((prev) => [
@@ -1255,6 +1328,58 @@ function Pedidos({ productos, setProductos, insumos, setInsumos, recetas, pedido
         </div>
       )}
 
+      <div className="mt-10 pt-8 border-t border-stone-200">
+        <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-2xl font-semibold text-stone-900">Reporte por fecha</h2>
+            <p className="text-stone-500 mt-1 text-sm">Histórico de pedidos (pendientes + entregados) en el rango que elijas. No afecta las listas de arriba.</p>
+          </div>
+          <BotonExportar onClick={exportarReporte} label="Exportar reporte" />
+        </header>
+
+        <FiltroFechas
+          desde={desdeReporte} setDesde={setDesdeReporte}
+          hasta={hastaReporte} setHasta={setHastaReporte}
+          granularidad={granularidadReporte} setGranularidad={setGranularidadReporte}
+          onLimpiar={() => { setDesdeReporte(""); setHastaReporte(""); }}
+        />
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <KpiCard label="Pedidos" value={totalesReporte.pedidos} />
+          <KpiCard label="Entregados" value={totalesReporte.entregados} accent="emerald" />
+          <KpiCard label="Pendientes" value={totalesReporte.pendientes} accent="orange" />
+          <KpiCard label="Total estimado" value={fmt(totalesReporte.totalEstimado)} accent="emerald" />
+        </div>
+
+        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
+              <tr>
+                <th className="text-left px-4 py-3">Período</th>
+                <th className="text-right px-4 py-3">Pedidos</th>
+                <th className="text-right px-4 py-3">Entregados</th>
+                <th className="text-right px-4 py-3">Pendientes</th>
+                <th className="text-right px-4 py-3">Total estimado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100">
+              {resumenReporte.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-stone-400">No hay pedidos en el rango seleccionado.</td></tr>
+              )}
+              {resumenReporte.map((r) => (
+                <tr key={r.clave} className="hover:bg-stone-50">
+                  <td className="px-4 py-3 font-medium">{etiquetaPeriodo(r.clave, granularidadReporte)}</td>
+                  <td className="px-4 py-3 text-right font-mono-num">{r.pedidos}</td>
+                  <td className="px-4 py-3 text-right font-mono-num text-emerald-700">{r.entregados}</td>
+                  <td className="px-4 py-3 text-right font-mono-num text-orange-600">{r.pendientes}</td>
+                  <td className="px-4 py-3 text-right font-mono-num">{fmt(r.totalEstimado)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {clienteAImprimir && (
         <ComprobanteCliente grupo={clienteAImprimir} productos={productos} onClose={() => setClienteAImprimir(null)} />
       )}
@@ -1448,6 +1573,59 @@ function ReciboTermico58({ grupo, productos, onClose }) {
 
 /* ============ COMPONENTES: VENTAS ============ */
 function Ventas({ ventas }) {
+  const [desde, setDesde] = useState("");
+  const [hasta, setHasta] = useState("");
+  const [granularidad, setGranularidad] = useState("dia");
+
+  const filtradas = useMemo(
+    () => ventas.filter((v) => (!desde || v.fecha >= desde) && (!hasta || v.fecha <= hasta)),
+    [ventas, desde, hasta]
+  );
+
+  const resumen = useMemo(() => {
+    const grupos = {};
+    filtradas.forEach((v) => {
+      const clave = claveDelPeriodo(v.fecha, granularidad);
+      if (!grupos[clave]) grupos[clave] = { clave, ventas: 0, unidades: 0, total: 0, ganancia: 0 };
+      grupos[clave].ventas += 1;
+      grupos[clave].unidades += v.cantidad;
+      grupos[clave].total += v.total;
+      grupos[clave].ganancia += v.ganancia || 0;
+    });
+    return Object.values(grupos).sort((a, b) => b.clave.localeCompare(a.clave));
+  }, [filtradas, granularidad]);
+
+  const totales = useMemo(
+    () => ({
+      ventas: filtradas.length,
+      unidades: filtradas.reduce((s, v) => s + v.cantidad, 0),
+      total: filtradas.reduce((s, v) => s + v.total, 0),
+      ganancia: filtradas.reduce((s, v) => s + (v.ganancia || 0), 0),
+    }),
+    [filtradas]
+  );
+
+  const exportar = () => {
+    exportarExcel("goat-ventas", {
+      Resumen: resumen.map((r) => ({
+        Período: etiquetaPeriodo(r.clave, granularidad),
+        Ventas: r.ventas,
+        Unidades: r.unidades,
+        Total: Number(r.total.toFixed(2)),
+        Ganancia: Number(r.ganancia.toFixed(2)),
+      })),
+      Detalle: filtradas.map((v) => ({
+        Fecha: v.fecha,
+        Producto: v.nombreProducto,
+        Cliente: v.cliente,
+        "Medio de pago": v.medioPago,
+        Cantidad: v.cantidad,
+        Total: v.total,
+        Ganancia: Number((v.ganancia || 0).toFixed(2)),
+      })),
+    });
+  };
+
   return (
     <div>
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -1455,23 +1633,53 @@ function Ventas({ ventas }) {
           <h1 className="font-display text-3xl font-semibold text-stone-900">Ventas</h1>
           <p className="text-stone-500 mt-1">Historial de ventas confirmadas (pedidos ya entregados).</p>
         </div>
-        <BotonExportar
-          onClick={() =>
-            exportarExcel("goat-ventas", {
-              Ventas: ventas.map((v) => ({
-                Fecha: v.fecha,
-                Producto: v.nombreProducto,
-                Cliente: v.cliente,
-                "Medio de pago": v.medioPago,
-                Cantidad: v.cantidad,
-                Total: v.total,
-                Ganancia: Number((v.ganancia || 0).toFixed(2)),
-              })),
-            })
-          }
-        />
+        <BotonExportar onClick={exportar} label="Exportar reporte" />
       </header>
 
+      <FiltroFechas
+        desde={desde} setDesde={setDesde}
+        hasta={hasta} setHasta={setHasta}
+        granularidad={granularidad} setGranularidad={setGranularidad}
+        onLimpiar={() => { setDesde(""); setHasta(""); }}
+      />
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <KpiCard label="Ventas" value={totales.ventas} />
+        <KpiCard label="Unidades vendidas" value={totales.unidades} />
+        <KpiCard label="Ingresos" value={fmt(totales.total)} accent="emerald" />
+        <KpiCard label="Ganancia" value={fmt(totales.ganancia)} accent="emerald" />
+      </div>
+
+      <h2 className="font-semibold text-stone-800 mb-2">Resumen por {granularidad === "dia" ? "día" : granularidad === "semana" ? "semana" : "mes"}</h2>
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto mb-8">
+        <table className="w-full text-sm">
+          <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
+            <tr>
+              <th className="text-left px-4 py-3">Período</th>
+              <th className="text-right px-4 py-3">Ventas</th>
+              <th className="text-right px-4 py-3">Unidades</th>
+              <th className="text-right px-4 py-3">Total</th>
+              <th className="text-right px-4 py-3">Ganancia</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100">
+            {resumen.length === 0 && (
+              <tr><td colSpan={5} className="px-4 py-6 text-center text-stone-400">No hay ventas en el rango seleccionado.</td></tr>
+            )}
+            {resumen.map((r) => (
+              <tr key={r.clave} className="hover:bg-stone-50">
+                <td className="px-4 py-3 font-medium">{etiquetaPeriodo(r.clave, granularidad)}</td>
+                <td className="px-4 py-3 text-right font-mono-num">{r.ventas}</td>
+                <td className="px-4 py-3 text-right font-mono-num">{r.unidades}</td>
+                <td className="px-4 py-3 text-right font-mono-num">{fmt(r.total)}</td>
+                <td className="px-4 py-3 text-right font-mono-num text-emerald-700">{fmt(r.ganancia)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 className="font-semibold text-stone-800 mb-2">Detalle</h2>
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-stone-100 text-stone-600 text-xs uppercase tracking-wide">
@@ -1486,10 +1694,10 @@ function Ventas({ ventas }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
-            {ventas.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-stone-400">Todavía no hay ventas confirmadas. Confirmá la entrega de un pedido para que aparezca acá.</td></tr>
+            {filtradas.length === 0 && (
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-stone-400">Todavía no hay ventas confirmadas en este rango.</td></tr>
             )}
-            {ventas.map((v) => (
+            {filtradas.map((v) => (
               <tr key={v.id} className="hover:bg-stone-50">
                 <td className="px-4 py-2 font-mono-num text-stone-500">{v.fecha}</td>
                 <td className="px-4 py-2">{v.nombreProducto}</td>
@@ -1733,6 +1941,28 @@ function Field({ label, children }) {
     <div>
       <label className="text-xs uppercase tracking-wide text-stone-500 block mb-1">{label}</label>
       {children}
+    </div>
+  );
+}
+
+// Barra reutilizable: rango de fechas + selector de agrupación (día/semana/mes).
+function FiltroFechas({ desde, setDesde, hasta, setHasta, granularidad, setGranularidad, onLimpiar }) {
+  return (
+    <div className="bg-white border border-stone-200 rounded-xl p-4 mb-4 flex flex-wrap gap-3 items-end">
+      <Field label="Desde"><input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className="input" /></Field>
+      <Field label="Hasta"><input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="input" /></Field>
+      <Field label="Agrupar por">
+        <select value={granularidad} onChange={(e) => setGranularidad(e.target.value)} className="input">
+          <option value="dia">Día</option>
+          <option value="semana">Semana</option>
+          <option value="mes">Mes</option>
+        </select>
+      </Field>
+      {(desde || hasta) && (
+        <button onClick={onLimpiar} className="text-sm text-stone-500 hover:text-stone-700 underline underline-offset-2 mb-2.5">
+          Limpiar filtro
+        </button>
+      )}
     </div>
   );
 }
